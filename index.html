@@ -12,7 +12,6 @@
   --gold:#F59E0B; --gold-bg:#FEF3C7;
   --slate:#334155; --slate-bg:#F1F5F9; --border:#CBD5E1;
   --d1c:#7c3aed; --d1bg:#EDE9FE;
-  --d2c:#be185d; --d2bg:#FCE7F3;
   --slack:#4A154B;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -23,22 +22,19 @@ body{font-family:'Noto Sans KR',sans-serif;font-size:11px;background:#e8edf3;col
 .mode-tab{flex:1;padding:11px 12px;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;border-bottom:3px solid transparent;background:transparent;color:#64748b;}
 .mode-tab.ms{color:var(--blue);border-bottom-color:var(--blue);background:var(--blue-bg);}
 .mode-tab.m1{color:var(--d1c);border-bottom-color:var(--d1c);background:var(--d1bg);}
-.mode-tab.m2{color:var(--d2c);border-bottom-color:var(--d2c);background:var(--d2bg);}
 .mbadge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;background:#e2e8f0;color:#475569;}
 .mode-tab.ms .mbadge{background:var(--blue);color:white;}
 .mode-tab.m1 .mbadge{background:var(--d1c);color:white;}
-.mode-tab.m2 .mbadge{background:var(--d2c);color:white;}
 /* 셀프평가가 완료된 경우 하향 탭에 잠금 해제 표시 */
 .mode-tab.locked{opacity:0.5; cursor:not-allowed;}
 .lock-badge{font-size:10px; margin-left:4px;}
-.dashboard{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:2px solid var(--navy);}
+.dashboard{display:grid;grid-template-columns:1fr 1fr;border-bottom:2px solid var(--navy);}
 .dc{border-right:1px solid var(--border); text-align:center;}
 .dlabel{background:var(--indigo-bg);color:var(--indigo);padding:6px 8px;font-weight:600;font-size:11px;border-bottom:1px solid var(--border);}
 .dval{padding:10px 8px;font-size:28px;font-weight:900;}
 .dval.vs{color:var(--blue);}
 .dval.vd{color:var(--indigo);}
 .down-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:8px;}
-.dgv-memo{height:30px; border-radius:4px; border:1px solid #cbd5e1; background: #fff;}
 .info-wrap{border-bottom:2px solid var(--navy);}
 .info-table{width:100%;border-collapse:collapse;}
 .info-table td{border:1px solid var(--border);padding:5px 8px;}
@@ -49,18 +45,15 @@ body{font-family:'Noto Sans KR',sans-serif;font-size:11px;background:#e8edf3;col
 .th-navy{background:var(--navy);color:white;font-size:9px;}
 .th-self{background:#1e40af;color:white;font-size:9px;}
 .th-d1{background:var(--d1c);color:white;font-size:9px;}
-.th-d2{background:var(--d2c);color:white;font-size:9px;}
 .sbtn{width:38px; height:28px; background:white; border:1px solid #d1d5db; cursor:pointer; font-size:9px; font-weight:700; border-radius:3px; color:#6b7280; margin: 1px;}
 .sbtn.ss{background:#1e40af!important;color:white!important;}
 .sbtn.s1{background:var(--d1c)!important;color:white!important;}
-.sbtn.s2{background:var(--d2c)!important;color:white!important;}
 /* 셀프 버튼 잠금 (하향 모드에서) */
 .sbtn.self-locked{background:#f1f5f9!important;color:#cbd5e1!important;cursor:not-allowed!important;border-color:#e2e8f0!important;}
 .sbtn.self-locked.ss{background:#bfdbfe!important;color:#93c5fd!important;}
 .vres{font-weight:900; font-size:14px; color:white; min-width: 45px;}
 .vself{background:#1e40af;}
 .vd1{background:var(--d1c);}
-.vd2{background:var(--d2c);}
 .dimmed{opacity:0.15; pointer-events:none;}
 .case-row td{background:#f0f7ff;}
 .case-lbl{background:#dbeafe!important;color:#1e40af!important;font-weight:700;font-size:10px;}
@@ -81,6 +74,8 @@ body{font-family:'Noto Sans KR',sans-serif;font-size:11px;background:#e8edf3;col
 .m-title{font-size:18px; font-weight:800; margin-bottom:15px; color:var(--navy);}
 .m-msg{font-size:12px; color:#444; margin-bottom:25px; line-height: 1.7; text-align: left; background: #f9fafb; padding: 15px; border-radius: 8px;}
 
+
+
 @media print{ .action-bar, .mode-bar, .down-mode-banner{display:none!important;} }
 </style>
 </head>
@@ -89,16 +84,32 @@ body{font-family:'Noto Sans KR',sans-serif;font-size:11px;background:#e8edf3;col
   <div class="page-title">🏢 기업연구소 인사평가(개발)</div>
   <div class="mode-bar">
     <button class="mode-tab ms" id="tab-self" onclick="setMode('self')">📝 셀프평가 <span class="mbadge">1차</span></button>
-    <button class="mode-tab" id="tab-d1" onclick="setMode('d1')">⬇️ 하향평가① <span class="mbadge">2차</span><span class="lock-badge" id="lock-d1">🔒</span></button>
-    <button class="mode-tab" id="tab-d2" onclick="setMode('d2')">⬇️ 하향평가② <span class="mbadge">2차</span><span class="lock-badge" id="lock-d2">🔒</span></button>
+    <button class="mode-tab" id="tab-d1" onclick="setMode('d1')">⬇️ 하향평가 <span class="mbadge">2차</span><span class="lock-badge" id="lock-d1">🔒</span></button>
   </div>
   <div class="down-mode-banner" id="down-banner">
     ⚠️ <strong>하향평가 모드입니다.</strong> 셀프평가 점수는 수정할 수 없습니다. 파란색으로 표시된 점수가 직원이 선택한 셀프 점수입니다. 하향 점수만 새로 선택해주세요.
   </div>
   <div class="dashboard">
-    <div class="dc"><div class="dlabel">📊 셀프 평균점수</div><div class="dval vs" id="d-self">0.0</div></div>
-    <div class="dc"><div class="dlabel">⬇️ 하향 평균</div><div class="dval vd" id="d-down">0.0</div></div>
-    <div class="dc"><div class="dlabel">확인란 (메모)</div><textarea id="memo-area" placeholder="자유롭게 메모를 입력하세요..." style="width:100%;height:62px;border:none;outline:none;font-family:inherit;font-size:11px;padding:8px;resize:none;background:white;"></textarea></div>
+    <div class="dc"><div class="dlabel">📊 셀프점수</div><div class="dval vs" id="d-self">0.0</div></div>
+    <div class="dc" id="dc-down-wrap">
+  <!-- 잠금 상태 -->
+  <div id="d-down-locked" onclick="unlockDown()" style="cursor:pointer;">
+    <div class="dlabel">⬇️ 하향 평균 🔒 <span style="font-size:9px;font-weight:400;">담당자만 확인 가능합니다.</span></div>
+    <div style="padding:14px 8px;font-size:26px;font-weight:900;color:#3730A3;filter:blur(10px);user-select:none;letter-spacing:2px;">88.8</div>
+  </div>
+  <!-- 잠금 해제 상태 -->
+  <div id="d-down-unlocked" style="display:none;">
+    <div class="dlabel">⬇️ 하향 평균 🔓 <span style="font-size:9px;font-weight:400;">담당자만 확인 가능합니다.</span></div>
+    <div class="dval vd" id="d-down" style="padding:8px 8px 4px;">0.0</div>
+    <div style="padding:2px 8px 8px;">
+      <textarea id="merge-input"
+        placeholder="Slack result_url 링크를 한 줄씩 붙여넣기"
+        style="width:100%;height:56px;border:1px solid #cbd5e1;border-radius:4px;padding:6px 8px;font-size:10px;font-family:inherit;resize:none;color:#334155;"
+        oninput="autoMerge()"></textarea>
+      <div id="merge-count" style="font-size:10px;color:#64748b;margin-top:3px;"></div>
+    </div>
+  </div>
+</div>
   </div>
   <div class="info-wrap">
     <table class="info-table">
@@ -116,6 +127,10 @@ body{font-family:'Noto Sans KR',sans-serif;font-size:11px;background:#e8edf3;col
         <td class="ilabel">담당업무</td>
         <td class="iinput" colspan="5"><input id="inf-work" type="text" placeholder="담당업무 입력" style="width:100%"></td>
       </tr>
+      <tr id="row-evaluator" style="display:none;">
+        <td class="ilabel">평가자명</td>
+        <td class="iinput" colspan="5"><input id="inf-evaluator" type="text" placeholder="하향평가자 이름 입력"></td>
+      </tr>
     </table>
   </div>
   <table class="eval-table">
@@ -125,26 +140,26 @@ body{font-family:'Noto Sans KR',sans-serif;font-size:11px;background:#e8edf3;col
         <th class="th-navy" style="width:75px">평가요소</th>
         <th class="th-navy" style="width:85px">평가항목</th>
         <th class="th-navy">평 가 기 준</th>
-        <th class="th-navy" colspan="9">등급 선택 (S+ ~ D+)</th>
+        <th class="th-navy" colspan="10">등급 선택 (S+ ~ D)</th>
         <th class="th-self" style="width:50px">셀프</th>
-        <th class="th-d1" style="width:50px">하향①</th>
-        <th class="th-d2" style="width:50px">하향②</th>
+        <th class="th-d1" style="width:50px">하향</th>
       </tr>
     </thead>
     <tbody id="eval-body"></tbody>
     <tr class="total-row">
       <td colspan="4" style="text-align:right;">총 합계 점수</td>
-      <td colspan="9"></td>
-      <td id="tot-self">0</td><td id="tot-d1">0</td><td id="tot-d2">0</td>
+      <td colspan="10"></td>
+      <td id="tot-self">0</td><td id="tot-d1">0</td>
     </tr>
   </table>
-  <div class="action-bar">
+
+<div class="action-bar">
     <div class="action-left">
       <button class="btn btn-red" onclick="clearCurrentMode()">🗑️ 현재 초기화</button>
       <button class="btn btn-red" onclick="clearAll()">🗑️ 전체 초기화</button>
       <button class="btn btn-gray" onclick="window.print()">🖨️ 인쇄하기</button>
     </div>
-    <button class="btn btn-slack" onclick="submitToSlack()">슬랙으로 제출하기</button>
+    <button class="btn btn-slack" onclick="submitToSlack()">제출하기</button>
   </div>
 </div>
 
@@ -212,6 +227,7 @@ const GRADES = [
   { label: 'C+', score: 70  },
   { label: 'C',  score: 65  },
   { label: 'D+', score: 60  },
+  { label: 'D',  score: 55  },
 ];
 const SV = GRADES.map(g => g.score); // 호환성 유지
 
@@ -233,7 +249,7 @@ function buildTable() {
     GRADES.forEach(g => {
       scoreBtns += `<td><button class="sbtn" id="b-${idx}-${g.score}" onclick="clickScore(${idx}, ${g.score})" title="${g.label} (${g.score}점)">${g.label}</button></td>`;
     });
-    tr.innerHTML = `<td>${idx+1}</td>${factorHtml}<td style="font-size:10px;">${it[1]}</td><td style="text-align:left; padding:5px 10px; font-size:10px; line-height:1.4;">${it[2]}</td>${scoreBtns}<td class="vres vself" id="vs-${idx}"></td><td class="vres vd1" id="v1-${idx}"></td><td class="vres vd2" id="v2-${idx}"></td>`;
+    tr.innerHTML = `<td>${idx+1}</td>${factorHtml}<td style="font-size:10px;">${it[1]}</td><td style="text-align:left; padding:5px 10px; font-size:10px; line-height:1.4;">${it[2]}</td>${scoreBtns}<td class="vres vself" id="vs-${idx}"></td><td class="vres vd1" id="v1-${idx}"></td>`;
     tbody.appendChild(tr);
     if(it[3]){
       const trCase = document.createElement('tr');
@@ -246,11 +262,14 @@ function buildTable() {
 
 function setMode(m) {
   mode = m;
+
   document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('ms','m1','m2'));
   document.getElementById(`tab-${m}`).classList.add(m === 'self' ? 'ms' : m === 'd1' ? 'm1' : 'm2');
   document.querySelectorAll('.vres').forEach(td => td.classList.add('dimmed'));
-  const prefix = mode === 'self' ? 'vs' : mode === 'd1' ? 'v1' : 'v2';
+  const prefix = mode === 'self' ? 'vs' : 'v1';
   document.querySelectorAll(`[id^="${prefix}-"]`).forEach(td => td.classList.remove('dimmed'));
+  // 하향평가 모드일 때 평가자명 표시
+  document.getElementById('row-evaluator').style.display = (mode === 'd1') ? '' : 'none';
 
   // 하향 모드일 때 셀프 버튼 잠금 + 배너 표시
   const isDown = (mode === 'd1' || mode === 'd2');
@@ -265,7 +284,6 @@ function updateButtonLockState() {
       const btn = document.getElementById(`b-${idx}-${v}`);
       if(!btn) return;
       if(isDown && selfLockedFromURL) {
-        // 하향 모드에서 셀프 버튼 잠금: 클릭하면 하향 점수로 처리되므로 시각적으로만 잠금 표시
         btn.classList.add('self-locked');
       } else {
         btn.classList.remove('self-locked');
@@ -286,10 +304,9 @@ function refreshRow(idx) {
   SV.forEach(v => {
     const btn = document.getElementById(`b-${idx}-${v}`);
     if(btn) {
-      btn.classList.remove('ss', 's1', 's2');
+      btn.classList.remove('ss', 's1');
       if (scores.self[si] === v) btn.classList.add('ss');
       if (scores.d1[si] === v) btn.classList.add('s1');
-      if (scores.d2[si] === v) btn.classList.add('s2');
     }
   });
   function scoreLabel(v) {
@@ -299,7 +316,6 @@ function refreshRow(idx) {
   }
   document.getElementById(`vs-${idx}`).textContent = scoreLabel(scores.self[si]);
   document.getElementById(`v1-${idx}`).textContent = scoreLabel(scores.d1[si]);
-  document.getElementById(`v2-${idx}`).textContent = scoreLabel(scores.d2[si]);
 }
 
 function calculate() {
@@ -311,16 +327,17 @@ function calculate() {
   }
   const selfAvg = modeAvg('self');
   const d1Avg   = modeAvg('d1');
-  const d2Avg   = modeAvg('d2');
-
   document.getElementById('tot-self').textContent = selfAvg === 0 ? '0.0' : selfAvg.toFixed(1);
   document.getElementById('tot-d1').textContent   = d1Avg === 0   ? '0.0' : d1Avg.toFixed(1);
-  document.getElementById('tot-d2').textContent   = d2Avg === 0   ? '0.0' : d2Avg.toFixed(1);
   document.getElementById('d-self').textContent   = selfAvg === 0 ? '0.0' : selfAvg.toFixed(1);
 
-  const activeCount = (d1Avg > 0 ? 1 : 0) + (d2Avg > 0 ? 1 : 0);
-  const downAvg = activeCount > 0 ? (d1Avg + d2Avg) / activeCount : 0;
-  document.getElementById('d-down').textContent = downAvg === 0 ? '0.0' : downAvg.toFixed(1);
+  const downAvg = d1Avg;
+  // 하향 평균은 취합 링크로만 업데이트 (autoMerge에서 처리)
+  // 링크가 없을 땐 자동 평균 표시
+  const mergeInput = document.getElementById('merge-input');
+  if(!mergeInput || !mergeInput.value.trim()) {
+    document.getElementById('d-down').textContent = downAvg === 0 ? '0.0' : downAvg.toFixed(1);
+  }
 }
 
 // ── 현재 상태 전체를 URL 파라미터로 직렬화 (하향평가자 공유 링크용)
@@ -460,6 +477,68 @@ function showModal(title, msg, btnShow=false) {
 }
 
 function closeModal() { document.getElementById('status-modal').classList.remove('open'); }
+let downUnlocked = false;
+function unlockDown() {
+  if(downUnlocked) return;
+  const pw = prompt('관리자 비밀번호를 입력하세요:');
+  if(pw !== 'allmyhye2026') {
+    alert('비밀번호가 올바르지 않습니다.');
+    return;
+  }
+  downUnlocked = true;
+  document.getElementById('d-down-locked').style.display = 'none';
+  document.getElementById('d-down-unlocked').style.display = 'block';
+  document.querySelector('#dc-down-wrap .dlabel').innerHTML = '⬇️ 하향 평균 🔓 <span style="font-size:9px;font-weight:400;">담당자만 확인 가능합니다.</span>';
+  document.querySelector('#dc-down-wrap .dlabel').style.cursor = 'default';
+}
+
+function autoMerge() {
+  const lines = document.getElementById('merge-input').value.trim().split('\n').filter(l => l.trim());
+  if(lines.length === 0) {
+    document.getElementById('d-down').textContent = '0.0';
+    document.getElementById('merge-count').textContent = '';
+    return;
+  }
+
+  const allDownVals = [];
+  let validCount = 0;
+
+  lines.forEach(line => {
+    try {
+      const params = new URLSearchParams(line.trim().split('?')[1] || '');
+      const d = params.get('d');
+      if(!d) return;
+      const data = JSON.parse(decodeURIComponent(atob(d)));
+      function expandScores(str) {
+        if(!str) return {};
+        const out = {};
+        str.split(',').forEach(part => {
+          const [k,v] = part.split(':');
+          if(k !== undefined && v !== undefined) out[String(parseInt(k))] = parseInt(v);
+        });
+        return out;
+      }
+      const d1 = expandScores(data.d1);
+      const d2 = expandScores(data.d2);
+      let hasScore = false;
+      [d1, d2].forEach(obj => {
+        const vals = Object.values(obj).filter(v => v > 0);
+        if(vals.length) { hasScore = true; vals.forEach(v => allDownVals.push(v)); }
+      });
+      if(hasScore) validCount++;
+    } catch(e) {}
+  });
+
+  const avg = allDownVals.length
+    ? (allDownVals.reduce((a,b)=>a+b,0) / allDownVals.length).toFixed(1)
+    : '0.0';
+  document.getElementById('d-down').textContent = avg;
+  document.getElementById('merge-count').textContent =
+    validCount > 0 ? `✅ ${validCount}명 하향평가 취합됨` : '⚠️ 유효한 링크 없음';
+}
+
+
+
 
 
 
