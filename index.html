@@ -994,6 +994,7 @@ function buildTable() {
   const _banner = document.getElementById('down-banner');
   if(_banner) _banner.classList.toggle('show', !_isSelf && selfLockedFromURL);
   updateButtonLockState();
+  updatePhaseTabs();
 }
 
 // ── 대시보드 패널 전환 (셀프/하향 공통)
@@ -1033,7 +1034,7 @@ function setMode(m) {
     : (currentDept ? (function(){ const map={dev_down:ITEMS_DEV_DOWN,nondev:ITEMS_NONDEV}; return map[currentDept.itemsDown]||ITEMS_DEV_DOWN; })() : ITEMS_DEV_DOWN);
   const needRebuild = (ITEMS !== itemsForMode) || (prevMode !== m);
   ITEMS = itemsForMode;
-  if(needRebuild) { buildTable(); return; }
+  if(needRebuild) buildTable();
 
   // ── 결과 칸 표시 (셀프:vs- 표시 / 하향:v1- 표시) ──
   const isSelf = (m === 'self');
@@ -1237,7 +1238,7 @@ async function submitToSlack() {
   // GitHub Pages URL 기준으로 링크 생성
   const savedData = getSaveData();
   const baseUrl = 'https://hrculture.github.io/allmytourhr/';
-  const resultUrl = baseUrl + '?d=' + savedData;
+  const resultUrl = baseUrl + '?d=' + savedData + (mode !== 'self' ? '&view=down' : '');
 
   const payload = {
     name: nameInput,
@@ -1652,8 +1653,18 @@ function tempLoad(silent) {
 
 // 초기화
 document.getElementById('inf-date').value = new Date().toISOString().slice(0, 10);
+const _initParams = new URLSearchParams(window.location.search);
+const _initViewDown = (_initParams.get('view') === 'down' && _initParams.get('d'));
+if(_initViewDown) {
+  // 하향평가 원문보기: 처음부터 하향 모드로 초기화
+  adminMode = true; selfSubmitted = true; selfLockedFromURL = true;
+  currentDept = DEPT_CONFIG[0];
+  const _downMap = { dev_down: ITEMS_DEV_DOWN, nondev: ITEMS_NONDEV };
+  ITEMS = _downMap[currentDept.itemsDown] || ITEMS_DEV_DOWN;
+  mode = 'd1';
+} 
 buildTable();
-setMode('self');
+if(!_initViewDown) setMode('self');
 updatePhaseTabs();
 syncNameLabels();
 
@@ -1664,6 +1675,14 @@ if(_urlParams.get('d')) {
   document.getElementById('dept-badge-text').textContent = currentDept.emoji + ' ' + currentDept.label;
   document.getElementById('onboarding').style.display = 'none';
   restoreFromURL();
+  if(_urlParams.get('view') === 'down') {
+    // 평가자명 자동 입력 (모드 전환은 초기화 단계에서 이미 처리됨)
+    const _evaluator = _urlParams.get('evaluator');
+    if(_evaluator) {
+      const _evEl = document.getElementById('inf-evaluator');
+      if(_evEl) _evEl.value = decodeURIComponent(_evaluator);
+    }
+  }
 } else {
   // 임시저장 데이터 확인
   const _tempRaw = localStorage.getItem('hr_temp_save');
@@ -2122,7 +2141,8 @@ function renderAdminTable(tab) {
       const tab2 = this.dataset.tab;
       const row  = adminData[tab2][idx];
       const name = row['성명'] || row['평가대상자'] || '';
-      openViewer(row['result_url'], name, tab2);
+      const evaluator = tab2 === 'down' ? (row['평가자'] || '') : '';
+      openViewer(row['result_url'], name, tab2, evaluator);
     });
   });
 }
@@ -2132,8 +2152,13 @@ function closeViewer() {
   document.getElementById('admin-viewer-overlay').classList.remove('open');
 }
 
-function openViewer(resultUrl, name, type) {
-  window.open(resultUrl, '_blank');
+function openViewer(resultUrl, name, type, evaluator) {
+  let url = resultUrl || '';
+  if(type === 'down') {
+    if(!url.includes('view=down')) url += (url.includes('?') ? '&' : '?') + 'view=down';
+    if(evaluator) url += '&evaluator=' + encodeURIComponent(evaluator);
+  }
+  window.open(url, '_blank');
 }
 
 function renderViewer(resultUrl, type) {
