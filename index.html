@@ -151,6 +151,9 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 .sbtn.ss { background: var(--primary) !important; color: white !important; border-color: var(--primary) !important; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3); }
 .sbtn.s1 { background: var(--blue) !important; color: white !important; border-color: var(--blue) !important; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3); }
 .sbtn.self-locked { background: var(--bg) !important; color: #CBD5E1 !important; cursor: not-allowed !important; border-color: var(--border) !important; box-shadow: none !important; transform: none !important; }
+.viewer-mode .sbtn { cursor: default !important; pointer-events: none !important; }
+.viewer-mode .sbtn.s1 { background: var(--blue) !important; color: white !important; border-color: var(--blue) !important; box-shadow: 0 4px 10px rgba(14,165,233,0.3) !important; }
+.viewer-mode .sbtn.ss { background: var(--primary) !important; color: white !important; border-color: var(--primary) !important; box-shadow: 0 4px 10px rgba(79,70,229,0.3) !important; }
 
 /* 사례 작성 */
 .case-row td { background: #F8FAFC; border-bottom: 1px dashed var(--border); }
@@ -426,7 +429,7 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
     </div>
   </div>
 
-  <div class="table-card">
+  <div class="table-card" id="table-card">
     <table class="eval-table">
       <thead>
         <tr>
@@ -769,8 +772,6 @@ const ITEMS_DEV_DOWN = [
   ['자동화/효율화 노력','효율성제안','ㆍ팀 또는 프로젝트의 생산성을 높이기 위한 기술적 개선안을 제안하거나 적용한 경험이 있는가?',true],
   ['데이터 기반 사고','근거기반판단','ㆍ업무 판단 시, 수치화된 근거나 과거 데이터를 논리적으로 활용했는가?',true],
   ['데이터 기반 사고','정량적접근','ㆍ여러 가지 테스트와 로그 기반 디버깅 등으로 문제점의 상황을 데이터 기반으로 제시한 적이 있었는가?',true],
-  ['성과 및 결과물','납기준수','ㆍ명확한 결과물을 기한 내에 낼 수 있었는가?',false],
-  ['성과 및 결과물','품질관리','ㆍ결과물의 품질, 안정성, 사용자 피드백은 어땠는가?',false]
 ];
 let ITEMS = ITEMS_DEV;
 let ITEMS_DOWN = ITEMS_DEV_DOWN;
@@ -1087,7 +1088,9 @@ function updateButtonLockState() {
     SV.forEach(v => {
       const btn = document.getElementById(`b-${idx}-${v}`);
       if(!btn) return;
-      if(isDown && selfLockedFromURL) {
+      if(viewerMode) {
+        btn.classList.remove('self-locked');
+      } else if(isDown && selfLockedFromURL) {
         btn.classList.add('self-locked');
       } else {
         btn.classList.remove('self-locked');
@@ -1697,6 +1700,8 @@ if(_urlParams.get('d')) {
   document.getElementById('onboarding').style.display = 'none';
   // viewerMode를 restoreFromURL() 전에 설정해야 updatePhaseTabs()가 올바르게 동작
   viewerMode = (_urlParams.get('view') === 'down') ? 'down' : 'self';
+  const _tableCard = document.getElementById('table-card');
+  if(_tableCard) _tableCard.classList.add('viewer-mode');
   restoreFromURL();
   if(viewerMode === 'down') {
     // 하향리뷰 원문보기: URL 쿼리의 evaluator로 덮어쓰기 (d 파라미터에도 저장되지만 명시적으로 처리)
