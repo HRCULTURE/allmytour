@@ -684,8 +684,8 @@ const DEPT_CONFIG = [
 ];
 let currentDept = null; // 선택된 부서 config 객체
 const WEBHOOK_CONFIG = {
-  self: "https://hooks.slack.com/triggers/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",
-  down: "https://hooks.slack.com/triggers/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"
+  self: "https://hooks.slack.com/triggers/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",
+  down: "https://hooks.slack.com/triggers/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"
 };
 // ▼ Apps Script 배포 후 여기에 웹앱 URL 붙여넣기
 const SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbyvW7Ypgbv17SLeaSY9Fx2MOoSxr7NhZcESCaoyHq5B6rHkuPbFaSYAsxDcA64Id5KLNg/exec';
@@ -769,6 +769,8 @@ const ITEMS_DEV_DOWN = [
   ['자동화/효율화 노력','효율성제안','ㆍ팀 또는 프로젝트의 생산성을 높이기 위한 기술적 개선안을 제안하거나 적용한 경험이 있는가?',true],
   ['데이터 기반 사고','근거기반판단','ㆍ업무 판단 시, 수치화된 근거나 과거 데이터를 논리적으로 활용했는가?',true],
   ['데이터 기반 사고','정량적접근','ㆍ여러 가지 테스트와 로그 기반 디버깅 등으로 문제점의 상황을 데이터 기반으로 제시한 적이 있었는가?',true],
+  ['성과 및 결과물','납기준수','ㆍ명확한 결과물을 기한 내에 낼 수 있었는가?',false],
+  ['성과 및 결과물','품질관리','ㆍ결과물의 품질, 안정성, 사용자 피드백은 어땠는가?',false]
 ];
 let ITEMS = ITEMS_DEV;
 let ITEMS_DOWN = ITEMS_DEV_DOWN;
