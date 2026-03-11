@@ -922,6 +922,8 @@ let info = {};
 
 // ── URL에서 받은 경우 셀프가 잠금 상태인지 여부
 let selfLockedFromURL = false;
+// ── 원문보기 모드 ('self' | 'down' | null)
+let viewerMode = null;
 let currentResultLink = '';
 
 // 등급명과 환산점수 정의
@@ -989,10 +991,13 @@ function buildTable() {
   updateDashboardPanel(_isSelf);
   // 평가자 행
   const _evalRow = document.getElementById('row-evaluator');
-  if(_evalRow) _evalRow.style.display = _isSelf ? 'none' : '';
+  if(_evalRow) _evalRow.style.display = (_isSelf || viewerMode === 'self') ? 'none' : '';
   // 배너 + 버튼 잠금
   const _banner = document.getElementById('down-banner');
-  if(_banner) _banner.classList.toggle('show', !_isSelf && selfLockedFromURL);
+  if(_banner) {
+    if(viewerMode === 'self') { _banner.classList.remove('show'); _banner.style.display = 'none'; }
+    else _banner.classList.toggle('show', !_isSelf && selfLockedFromURL);
+  }
   updateButtonLockState();
   updatePhaseTabs();
 }
@@ -1062,12 +1067,15 @@ function setMode(m) {
 
   // 평가자 행 표시
   const evalRow = document.getElementById('row-evaluator');
-  if(evalRow) evalRow.style.display = (m === 'd1') ? '' : 'none';
+  if(evalRow) evalRow.style.display = (m === 'd1' && viewerMode !== 'self') ? '' : 'none';
 
   // 하향 배너 + 버튼 잠금
   const isDown = (m === 'd1' || m === 'd2');
   const banner = document.getElementById('down-banner');
-  if(banner) banner.classList.toggle('show', isDown && selfLockedFromURL);
+  if(banner) {
+    if(viewerMode === 'self') { banner.classList.remove('show'); banner.style.display = 'none'; }
+    else banner.classList.toggle('show', isDown && selfLockedFromURL);
+  }
   updateButtonLockState();
 }
 
@@ -1145,11 +1153,10 @@ function calculate() {
 // ── 현재 상태 전체를 URL 파라미터로 직렬화 (하향평가자 공유 링크용)
 function getSaveData() {
   // 점수를 "idx:val,idx:val" 형태로 압축해 URL 길이 최소화
+  // 사례(서술형) 데이터는 URL에서 제외 → Sheets에 별도 저장
   function compress(obj) {
     return Object.entries(obj).map(([k,v]) => k+':'+v).join(',');
   }
-  const caseData = {};
-  document.querySelectorAll('.case-val').forEach(el => { if(el.value) caseData[el.dataset.idx] = el.value; });
   const infoData = {
     id: document.getElementById('inf-id').value,
     name: document.getElementById('inf-name').value,
@@ -1157,10 +1164,18 @@ function getSaveData() {
     dept: document.getElementById('inf-dept').value,
     join: document.getElementById('inf-join').value,
     date: document.getElementById('inf-date').value,
-    work: document.getElementById('inf-work').value
+    work: document.getElementById('inf-work').value,
+    evaluator: document.getElementById('inf-evaluator')?.value || ''
   };
-  const compact = { s: compress(scores.self), d1: compress(scores.d1), d2: compress(scores.d2), c: caseData, i: infoData };
+  const compact = { s: compress(scores.self), d1: compress(scores.d1), d2: compress(scores.d2), i: infoData };
   return btoa(encodeURIComponent(JSON.stringify(compact)));
+}
+
+// ── 사례(서술형) 데이터만 별도 수집
+function getCaseData() {
+  const caseData = {};
+  document.querySelectorAll('.case-val').forEach(el => { if(el.value.trim()) caseData[el.dataset.idx] = el.value.trim(); });
+  return caseData;
 }
 
 // ── URL 파라미터에서 복원 (압축 포맷 & 구버전 포맷 모두 지원)
@@ -1188,7 +1203,21 @@ function restoreFromURL() {
       scores.d1 = expandScores(data.d1);
       scores.d2 = expandScores(data.d2);
       if(data.i) Object.entries(data.i).forEach(([k,v]) => { const el = document.getElementById('inf-'+k); if(el) el.value = v; });
-      if(data.c) Object.entries(data.c).forEach(([idx,v]) => { const el = document.querySelector('.case-val[data-idx="'+idx+'"]'); if(el) el.value = v; });
+      // c가 URL에 있으면 그대로, 없으면 Sheets에서 비동기 로드
+      if(data.c) {
+        Object.entries(data.c).forEach(([idx,v]) => { const el = document.querySelector('.case-val[data-idx="'+idx+'"]'); if(el) el.value = v; });
+      } else if(data.i?.name && SHEETS_API_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
+        fetch(SHEETS_API_URL + '?action=get_cases&name=' + encodeURIComponent(data.i.name))
+          .then(r => r.json())
+          .then(res => {
+            if(res.success && res.cases) {
+              Object.entries(res.cases).forEach(([idx,v]) => {
+                const el = document.querySelector('.case-val[data-idx="'+idx+'"]');
+                if(el) el.value = v;
+              });
+            }
+          }).catch(() => {});
+      }
     } else if(data.scores) {
       // 구버전 포맷 호환
       scores = data.scores;
@@ -1238,7 +1267,10 @@ async function submitToSlack() {
   // GitHub Pages URL 기준으로 링크 생성
   const savedData = getSaveData();
   const baseUrl = 'https://hrculture.github.io/allmytourhr/';
-  const resultUrl = baseUrl + '?d=' + savedData + (mode !== 'self' ? '&view=down' : '');
+  const evaluatorVal = document.getElementById('inf-evaluator')?.value?.trim() || '';
+  const resultUrl = baseUrl + '?d=' + savedData
+    + (mode !== 'self' ? '&view=down' : '')
+    + (mode !== 'self' && evaluatorVal ? '&evaluator=' + encodeURIComponent(evaluatorVal) : '');
 
   const payload = {
     name: nameInput,
@@ -1277,6 +1309,7 @@ async function submitToSlack() {
 
   // Sheets 저장 (셀프/하향 모두)
   if(SHEETS_API_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
+    const caseData = getCaseData();
     const sheetsParams = new URLSearchParams({
       action: mode === 'self' ? 'save_self' : 'save_down',
       mode,
@@ -1290,9 +1323,20 @@ async function submitToSlack() {
       pos:  document.getElementById('inf-pos')?.value  || '',
       work: document.getElementById('inf-work')?.value || '',
       join: document.getElementById('inf-join')?.value || '',
-      date: document.getElementById('inf-date')?.value || ''
+      date: document.getElementById('inf-date')?.value || '',
+      cases: JSON.stringify(caseData)
     });
-    fetch(SHEETS_API_URL + '?' + sheetsParams.toString()).catch(() => {});
+    // 사례 데이터가 있으면 POST로 전송 (URL 길이 제한 우회)
+    if(Object.keys(caseData).length > 0) {
+      fetch(SHEETS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: sheetsParams.toString(),
+        mode: 'no-cors'
+      }).catch(() => {});
+    } else {
+      fetch(SHEETS_API_URL + '?' + sheetsParams.toString()).catch(() => {});
+    }
   }
 
   function onSubmitDone() {
@@ -1368,6 +1412,11 @@ function updatePhaseTabs() {
   const lockIcon = document.getElementById('tab-lock-icon');
   if(!tabSelf || !tabDown) return;
 
+  // 원문보기 모드: 반대 탭 완전 숨김
+  if(viewerMode === 'self')       { tabDown.style.display = 'none'; tabSelf.style.display = ''; }
+  else if(viewerMode === 'down')  { tabSelf.style.display = 'none'; tabDown.style.display = ''; }
+  else                            { tabSelf.style.display = ''; tabDown.style.display = ''; }
+
   tabSelf.className = 'phase-tab';
   tabDown.className = 'phase-tab';
 
@@ -1381,7 +1430,6 @@ function updatePhaseTabs() {
       if(lockIcon) lockIcon.textContent = '🔒';
     }
   } else {
-    // 하향평가 모드
     tabSelf.classList.add('unlocked-tab');
     tabDown.classList.add('active-down');
     if(lockIcon) lockIcon.textContent = '🔓';
@@ -1674,14 +1722,29 @@ if(_urlParams.get('d')) {
   currentDept = DEPT_CONFIG[0];
   document.getElementById('dept-badge-text').textContent = currentDept.emoji + ' ' + currentDept.label;
   document.getElementById('onboarding').style.display = 'none';
+  // viewerMode를 restoreFromURL() 전에 설정해야 updatePhaseTabs()가 올바르게 동작
+  viewerMode = (_urlParams.get('view') === 'down') ? 'down' : 'self';
   restoreFromURL();
-  if(_urlParams.get('view') === 'down') {
-    // 평가자명 자동 입력 (모드 전환은 초기화 단계에서 이미 처리됨)
+  if(viewerMode === 'down') {
+    // 하향리뷰 원문보기: URL 쿼리의 evaluator로 덮어쓰기 (d 파라미터에도 저장되지만 명시적으로 처리)
     const _evaluator = _urlParams.get('evaluator');
     if(_evaluator) {
       const _evEl = document.getElementById('inf-evaluator');
       if(_evEl) _evEl.value = decodeURIComponent(_evaluator);
     }
+    // 셀프리뷰 점수란 숨김
+    const _dSelfOpen   = document.getElementById('d-self-open');
+    const _dSelfLocked = document.getElementById('d-self-locked');
+    if(_dSelfOpen)   _dSelfOpen.style.display   = 'none';
+    if(_dSelfLocked) _dSelfLocked.style.display = 'none';
+  } else {
+    // 셀프리뷰 원문보기: 하향리뷰 관련 UI 모두 숨김
+    const _dDownPanel = document.getElementById('d-down-panel');
+    if(_dDownPanel) _dDownPanel.style.display = 'none';
+    const _dcDownWrap = document.getElementById('dc-down-wrap');
+    if(_dcDownWrap) _dcDownWrap.style.display = 'none';
+    const _dSelfOpen = document.getElementById('d-self-open');
+    if(_dSelfOpen) _dSelfOpen.style.display = '';
   }
 } else {
   // 임시저장 데이터 확인
@@ -2161,7 +2224,7 @@ function openViewer(resultUrl, name, type, evaluator) {
   window.open(url, '_blank');
 }
 
-function renderViewer(resultUrl, type) {
+async function renderViewer(resultUrl, type) {
   const content = document.getElementById('viewer-content');
   try {
     let dParam = null;
@@ -2185,7 +2248,15 @@ function renderViewer(resultUrl, type) {
     const info       = data.i || data.info || {};
     const selfScores = data.s !== undefined ? expandScores(data.s) : (data.scores?.self || {});
     const downScores = data.d1 !== undefined ? expandScores(data.d1) : (data.scores?.d1 || {});
-    const cases      = data.c || data.cases || {};
+    // URL에 c가 있으면 그대로 쓰고, 없으면 Sheets에서 불러오기
+    let cases = data.c || data.cases || {};
+    if(type === 'self' && Object.keys(cases).length === 0 && info.name && SHEETS_API_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
+      try {
+        const res = await fetch(SHEETS_API_URL + '?action=get_cases&name=' + encodeURIComponent(info.name));
+        const casesData = await res.json();
+        if(casesData.success && casesData.cases) cases = casesData.cases;
+      } catch(e) { /* cases 로드 실패 시 무시 */ }
+    }
     const showScores = type === 'self' ? selfScores : downScores;
     const itemList   = ITEMS_DEV; // 기본 항목 (추후 부서별 분기 가능)
 
