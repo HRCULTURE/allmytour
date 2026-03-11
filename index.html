@@ -155,8 +155,8 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 /* 사례 작성 */
 .case-row td { background: #F8FAFC; border-bottom: 1px dashed var(--border); }
 .case-lbl { color: var(--primary) !important; font-weight: 700; font-size: 11px; }
-.case-inp input { width: 100%; border: 1px solid transparent; border-radius: 8px; outline: none; background: white; padding: 10px 14px; font-size: 12px; transition: border-color 0.2s; font-family: inherit; }
-.case-inp input:focus { border-color: var(--primary); }
+.case-inp textarea { width: 100%; border: 1px solid transparent; border-radius: 8px; outline: none; background: white; padding: 10px 14px; font-size: 12px; transition: border-color 0.2s; font-family: inherit; resize: vertical; min-height: 80px; line-height: 1.7; box-sizing: border-box; display: block; }
+.case-inp textarea:focus { border-color: var(--primary); }
 
 /* 총점 */
 .total-row td { background: var(--navy); color: white; font-weight: 800; font-size: 14px; padding: 16px 10px; border: none; }
@@ -969,7 +969,7 @@ function buildTable() {
     if(it[3]){
       const trCase = document.createElement('tr');
       trCase.className = 'case-row';
-      trCase.innerHTML = `<td class="case-lbl">사례작성</td><td colspan="15" class="case-inp"><input type="text" class="case-val" data-idx="${idx}" placeholder="구체적인 사례를 입력하세요..."></td>`;
+      trCase.innerHTML = `<td class="case-lbl">사례작성</td><td colspan="15" class="case-inp"><textarea class="case-val" data-idx="${idx}" placeholder="구체적인 사례를 입력하세요..."></textarea></td>`;
       tbody.appendChild(trCase);
     }
   });
@@ -1153,10 +1153,11 @@ function calculate() {
 // ── 현재 상태 전체를 URL 파라미터로 직렬화 (하향평가자 공유 링크용)
 function getSaveData() {
   // 점수를 "idx:val,idx:val" 형태로 압축해 URL 길이 최소화
-  // 사례(서술형) 데이터는 URL에서 제외 → Sheets에 별도 저장
   function compress(obj) {
     return Object.entries(obj).map(([k,v]) => k+':'+v).join(',');
   }
+  const caseData = {};
+  document.querySelectorAll('.case-val').forEach(el => { if(el.value) caseData[el.dataset.idx] = el.value; });
   const infoData = {
     id: document.getElementById('inf-id').value,
     name: document.getElementById('inf-name').value,
@@ -1167,15 +1168,8 @@ function getSaveData() {
     work: document.getElementById('inf-work').value,
     evaluator: document.getElementById('inf-evaluator')?.value || ''
   };
-  const compact = { s: compress(scores.self), d1: compress(scores.d1), d2: compress(scores.d2), i: infoData };
+  const compact = { s: compress(scores.self), d1: compress(scores.d1), d2: compress(scores.d2), c: caseData, i: infoData };
   return btoa(encodeURIComponent(JSON.stringify(compact)));
-}
-
-// ── 사례(서술형) 데이터만 별도 수집
-function getCaseData() {
-  const caseData = {};
-  document.querySelectorAll('.case-val').forEach(el => { if(el.value.trim()) caseData[el.dataset.idx] = el.value.trim(); });
-  return caseData;
 }
 
 // ── URL 파라미터에서 복원 (압축 포맷 & 구버전 포맷 모두 지원)
@@ -1203,21 +1197,7 @@ function restoreFromURL() {
       scores.d1 = expandScores(data.d1);
       scores.d2 = expandScores(data.d2);
       if(data.i) Object.entries(data.i).forEach(([k,v]) => { const el = document.getElementById('inf-'+k); if(el) el.value = v; });
-      // c가 URL에 있으면 그대로, 없으면 Sheets에서 비동기 로드
-      if(data.c) {
-        Object.entries(data.c).forEach(([idx,v]) => { const el = document.querySelector('.case-val[data-idx="'+idx+'"]'); if(el) el.value = v; });
-      } else if(data.i?.name && SHEETS_API_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
-        fetch(SHEETS_API_URL + '?action=get_cases&name=' + encodeURIComponent(data.i.name))
-          .then(r => r.json())
-          .then(res => {
-            if(res.success && res.cases) {
-              Object.entries(res.cases).forEach(([idx,v]) => {
-                const el = document.querySelector('.case-val[data-idx="'+idx+'"]');
-                if(el) el.value = v;
-              });
-            }
-          }).catch(() => {});
-      }
+      if(data.c) Object.entries(data.c).forEach(([idx,v]) => { const el = document.querySelector('.case-val[data-idx="'+idx+'"]'); if(el) el.value = v; });
     } else if(data.scores) {
       // 구버전 포맷 호환
       scores = data.scores;
@@ -1309,7 +1289,6 @@ async function submitToSlack() {
 
   // Sheets 저장 (셀프/하향 모두)
   if(SHEETS_API_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
-    const caseData = getCaseData();
     const sheetsParams = new URLSearchParams({
       action: mode === 'self' ? 'save_self' : 'save_down',
       mode,
@@ -1323,20 +1302,9 @@ async function submitToSlack() {
       pos:  document.getElementById('inf-pos')?.value  || '',
       work: document.getElementById('inf-work')?.value || '',
       join: document.getElementById('inf-join')?.value || '',
-      date: document.getElementById('inf-date')?.value || '',
-      cases: JSON.stringify(caseData)
+      date: document.getElementById('inf-date')?.value || ''
     });
-    // 사례 데이터가 있으면 POST로 전송 (URL 길이 제한 우회)
-    if(Object.keys(caseData).length > 0) {
-      fetch(SHEETS_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: sheetsParams.toString(),
-        mode: 'no-cors'
-      }).catch(() => {});
-    } else {
-      fetch(SHEETS_API_URL + '?' + sheetsParams.toString()).catch(() => {});
-    }
+    fetch(SHEETS_API_URL + '?' + sheetsParams.toString()).catch(() => {});
   }
 
   function onSubmitDone() {
@@ -2224,7 +2192,7 @@ function openViewer(resultUrl, name, type, evaluator) {
   window.open(url, '_blank');
 }
 
-async function renderViewer(resultUrl, type) {
+function renderViewer(resultUrl, type) {
   const content = document.getElementById('viewer-content');
   try {
     let dParam = null;
@@ -2248,15 +2216,7 @@ async function renderViewer(resultUrl, type) {
     const info       = data.i || data.info || {};
     const selfScores = data.s !== undefined ? expandScores(data.s) : (data.scores?.self || {});
     const downScores = data.d1 !== undefined ? expandScores(data.d1) : (data.scores?.d1 || {});
-    // URL에 c가 있으면 그대로 쓰고, 없으면 Sheets에서 불러오기
-    let cases = data.c || data.cases || {};
-    if(type === 'self' && Object.keys(cases).length === 0 && info.name && SHEETS_API_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
-      try {
-        const res = await fetch(SHEETS_API_URL + '?action=get_cases&name=' + encodeURIComponent(info.name));
-        const casesData = await res.json();
-        if(casesData.success && casesData.cases) cases = casesData.cases;
-      } catch(e) { /* cases 로드 실패 시 무시 */ }
-    }
+    const cases      = data.c || data.cases || {};
     const showScores = type === 'self' ? selfScores : downScores;
     const itemList   = ITEMS_DEV; // 기본 항목 (추후 부서별 분기 가능)
 
