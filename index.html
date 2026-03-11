@@ -1306,14 +1306,8 @@ async function submitToSlack() {
     showModal("제출 완료! ✅", doneMsg, true);
   }
 
-  let submitDone = false;
-  function safeOnSubmitDone() {
-    if(submitDone) return;
-    submitDone = true;
-    onSubmitDone();
-  }
-
-  const submitTimer = setTimeout(safeOnSubmitDone, 2000);
+  // Slack 응답 여부와 무관하게 2초 후 무조건 완료 (재전송 가능)
+  const submitTimer = setTimeout(onSubmitDone, 2000);
 
   fetch(triggerUrl, {
     method: 'POST',
@@ -1321,10 +1315,10 @@ async function submitToSlack() {
     body: JSON.stringify(payload)
   }).then(() => {
     clearTimeout(submitTimer);
-    safeOnSubmitDone();
+    onSubmitDone();
   }).catch(() => {
     clearTimeout(submitTimer);
-    safeOnSubmitDone();
+    onSubmitDone();
   });
 }
 
