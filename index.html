@@ -523,6 +523,63 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
     </table>
   </div>
 
+  <!-- ── 셀프리뷰 서술형 7개 문항 (일반 평가 전용) ── -->
+  <div id="self-essay-section" style="display:none;">
+    <div class="table-card" style="padding:24px 28px; margin-bottom:8px;">
+      <div style="font-size:15px; font-weight:800; color:#1A1F27; margin-bottom:4px;">서술형 문항</div>
+      <div style="font-size:12px; color:#94A3B8; margin-bottom:20px;">아래 항목들을 성실하게 작성해 주세요.</div>
+
+      <!-- 서술형1 -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:13px; font-weight:700; color:#4338CA; margin-bottom:6px;">[서술형1] <span style="color:#EF4444;">*</span></div>
+        <div style="font-size:13px; color:#1E293B; margin-bottom:8px; line-height:1.6;">지난 1년간 기여한 성과 중, 가장 잘했던 내용, 그리고 내가 그 지표에 가장 큰 공헌을 한 구체적인 이유를 설명해 주세요.</div>
+        <textarea class="essay-val" data-essay-idx="0" placeholder="내용을 입력하세요..." style="width:100%;min-height:100px;border:1.5px solid #E2E8F0;border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;resize:vertical;outline:none;line-height:1.7;box-sizing:border-box;" onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'"></textarea>
+      </div>
+
+      <!-- 서술형2 -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:13px; font-weight:700; color:#4338CA; margin-bottom:6px;">[서술형2] <span style="color:#EF4444;">*</span></div>
+        <div style="font-size:13px; color:#1E293B; margin-bottom:8px; line-height:1.6;">개발관련 개선을 위한 빠른 테스트/실험 사례를 지난 1년간을 기준으로 기술해 주세요. (없다면, "없음" 으로 표시해 주세요)</div>
+        <textarea class="essay-val" data-essay-idx="1" placeholder="내용을 입력하세요..." style="width:100%;min-height:100px;border:1.5px solid #E2E8F0;border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;resize:vertical;outline:none;line-height:1.7;box-sizing:border-box;" onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'"></textarea>
+      </div>
+
+      <!-- 서술형3 -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:13px; font-weight:700; color:#4338CA; margin-bottom:6px;">[서술형3] <span style="color:#EF4444;">*</span></div>
+        <div style="font-size:13px; color:#1E293B; margin-bottom:8px; line-height:1.6;">본인이 주도하거나 협업하여 달성한 리소스 절감 사례는 어떤 것이 있습니까? 또는 기존과는 다른 방식(자동화, AI 내재화 등)으로 문제를 풀어 자원 소비를 줄인 경험이 있다면 구체적으로 설명해주세요.</div>
+        <textarea class="essay-val" data-essay-idx="2" placeholder="내용을 입력하세요..." style="width:100%;min-height:100px;border:1.5px solid #E2E8F0;border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;resize:vertical;outline:none;line-height:1.7;box-sizing:border-box;" onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'"></textarea>
+      </div>
+
+      <!-- 서술형4 -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:13px; font-weight:700; color:#4338CA; margin-bottom:6px;">[서술형4] <span style="color:#EF4444;">*</span></div>
+        <div style="font-size:13px; color:#1E293B; margin-bottom:8px; line-height:1.6;">지난 1년간 '나는 이런 점에서 여전히 부족하다' 라고 느끼는 내 역량 및 한계나 고정관념이 있다면 기술해 주세요.</div>
+        <textarea class="essay-val" data-essay-idx="3" placeholder="내용을 입력하세요..." style="width:100%;min-height:100px;border:1.5px solid #E2E8F0;border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;resize:vertical;outline:none;line-height:1.7;box-sizing:border-box;" onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'"></textarea>
+      </div>
+
+      <!-- 서술형5 -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:13px; font-weight:700; color:#4338CA; margin-bottom:6px;">[서술형5] <span style="color:#EF4444;">*</span></div>
+        <div style="font-size:13px; color:#1E293B; margin-bottom:8px; line-height:1.6;">지난 1년간 소속 팀원으로서 역량과 자질을 성장시키기 위해 어떤 노력을 기울였는지 구체적으로 기술해 주세요.</div>
+        <textarea class="essay-val" data-essay-idx="4" placeholder="내용을 입력하세요..." style="width:100%;min-height:100px;border:1.5px solid #E2E8F0;border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;resize:vertical;outline:none;line-height:1.7;box-sizing:border-box;" onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'"></textarea>
+      </div>
+
+      <!-- 서술형6 -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:13px; font-weight:700; color:#4338CA; margin-bottom:6px;">[서술형6] <span style="color:#EF4444;">*</span></div>
+        <div style="font-size:13px; color:#1E293B; margin-bottom:8px; line-height:1.6;">지난 1년간 내가 팀 또는 조직에 가장 긍정적으로 영향을 준 부분과 그렇지 못했던 부분은 무엇이라고 생각하나요?</div>
+        <textarea class="essay-val" data-essay-idx="5" placeholder="내용을 입력하세요..." style="width:100%;min-height:100px;border:1.5px solid #E2E8F0;border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;resize:vertical;outline:none;line-height:1.7;box-sizing:border-box;" onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'"></textarea>
+      </div>
+
+      <!-- 서술형7 -->
+      <div style="margin-bottom:4px;">
+        <div style="font-size:13px; font-weight:700; color:#4338CA; margin-bottom:6px;">[서술형7] <span style="color:#EF4444;">*</span></div>
+        <div style="font-size:13px; color:#1E293B; margin-bottom:8px; line-height:1.6;">지난 1년간 본인이 주도했거나 기여한 과업 중, 가시적인 성과(매출, 유저, 거래 등) 향상 결과는 무엇이었는지 모두 기술해 주세요.</div>
+        <textarea class="essay-val" data-essay-idx="6" placeholder="내용을 입력하세요..." style="width:100%;min-height:100px;border:1.5px solid #E2E8F0;border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;resize:vertical;outline:none;line-height:1.7;box-sizing:border-box;" onfocus="this.style.borderColor='#6366F1'" onblur="this.style.borderColor='#E2E8F0'"></textarea>
+      </div>
+    </div>
+  </div>
+
   <div class="action-bar" style="flex-wrap:wrap; align-items:flex-start; gap:16px;">
     <!-- 수습평가 종합 서술형 -->
     <div id="probation-final" style="display:none; flex:1; min-width:0;">
@@ -837,8 +894,8 @@ const ITEMS_DEV=[
   ['코딩 역량','코드 품질','ㆍ효율적인 코드 작성과 주석을 코드마다 달고 있는가?',false],
   ['코딩 역량','성능 최적화','ㆍ비즈니스 로직에서 성능 최적화를 위해 노력하며, 정확한 Data를 기반으로 응답속도를 줄였는가?',false],
   ['코딩 역량','확장성','ㆍ설계 시 장기적인 유지보수와 확장성을 고려했는가?',false],
-  ['빠른 실행력','신속한시도','ㆍ문제가 불확실하거나 미정된 상황에서 빠르게 MVP 또는 실험적 시도를 했는가?',true],
-  ['빠른 실행력','실행중심','ㆍ실행 이후, 개선 루프(피드백-반영)를 통해 결과를 반복 개선했는가?',true],
+  ['빠른 실행력','신속한시도','ㆍ주어진 문제점이 불확실하거나 미정된 상황에서 빠르게 MVP 또는 실험적 시도를 했는가?',true],
+  ['빠른 실행력','실행중심','ㆍ실행 이후, 개선 루프(피드백-반영)를 통해 결과를 반복 개선했는가?',false],
   ['자동화/효율화 노력','프로세스개선','ㆍ개발 중 반복적 수작업 프로세스를 자동화하거나, 개발 툴/스크립트로 직접 개선한 경험이 있는가?',true],
   ['자동화/효율화 노력','효율성제안','ㆍ팀 또는 프로젝트의 생산성을 높이기 위한 기술적 개선안을 제안하거나 적용한 경험이 있는가?',true],
   ['데이터 기반 사고','근거기반판단','ㆍ업무 판단 시, 수치화된 근거나 과거 데이터를 논리적으로 활용했는가?',false],
@@ -892,8 +949,8 @@ const ITEMS_DEV_DOWN = [
   ['코딩 역량','코드 품질','ㆍ효율적인 코드 작성과 주석을 코드마다 달고 있는가?',false],
   ['코딩 역량','성능 최적화','ㆍ비즈니스 로직에서 성능 최적화를 위해 노력하며, 정확한 Data를 기반으로 응답속도를 줄였는가?',false],
   ['코딩 역량','확장성','ㆍ설계 시 장기적인 유지보수와 확장성을 고려했는가?',false],
-  ['빠른 실행력','신속한시도','ㆍ문제가 불확실하거나 미정된 상황에서 빠르게 MVP 또는 실험적 시도를 했는가?',true],
-  ['빠른 실행력','실행중심','ㆍ실행 이후, 개선 루프(피드백-반영)를 통해 결과를 반복 개선했는가?',true],
+  ['빠른 실행력','신속한시도','ㆍ주어진 문제점이 불확실하거나 미정된 상황에서 빠르게 MVP 또는 실험적 시도를 했는가?',true],
+  ['빠른 실행력','실행중심','ㆍ실행 이후, 개선 루프(피드백-반영)를 통해 결과를 반복 개선했는가?',false],
   ['자동화/효율화 노력','프로세스개선','ㆍ개발 중 반복적 수작업 프로세스를 자동화하거나, 개발 툴/스크립트로 직접 개선한 경험이 있는가?',true],
   ['자동화/효율화 노력','효율성제안','ㆍ팀 또는 프로젝트의 생산성을 높이기 위한 기술적 개선안을 제안하거나 적용한 경험이 있는가?',true],
   ['데이터 기반 사고','근거기반판단','ㆍ업무 판단 시, 수치화된 근거나 과거 데이터를 논리적으로 활용했는가?',true],
@@ -1346,6 +1403,10 @@ function setMode(m) {
   const prevMode = mode;
   mode = m;
 
+  // 서술형 섹션: 셀프리뷰 모드일 때만 표시
+  const essaySection = document.getElementById('self-essay-section');
+  if(essaySection) essaySection.style.display = (m === 'self' && ITEMS !== ITEMS_PROBATION) ? '' : 'none';
+
   // ── 탭 UI 업데이트
   updatePhaseTabs();
 
@@ -1502,9 +1563,13 @@ function getSaveData() {
 // ── 사례(서술형) 데이터만 별도 수집
 function getCaseData() {
   const caseData = {};
-  // 일반 평가 textarea
+  // 일반 평가 textarea (항목별 사례)
   document.querySelectorAll('.case-val').forEach(el => {
     if(el.value.trim()) caseData[el.dataset.idx] = el.value.trim();
+  });
+  // 서술형 7개 문항
+  document.querySelectorAll('.essay-val').forEach(el => {
+    if(el.value.trim()) caseData['essay_' + el.dataset.essayIdx] = el.value.trim();
   });
   // 수습리뷰 카드형 코멘트 (contenteditable div)
   if(ITEMS === ITEMS_PROBATION) {
@@ -2033,7 +2098,49 @@ function renderPanelFromResultUrl(resultUrl, fallbackScore) {
             + '</div>';
     });
 
-    panelBody.innerHTML = '<div class="self-panel-items">' + rows + '</div>';
+    // 서술형 7개 문항 (Sheets에서 조회)
+    const essayLabels = [
+      '지난 1년간 기여한 성과 중, 가장 잘했던 내용과 공헌 이유',
+      '개발관련 빠른 테스트/실험 사례 (지난 1년)',
+      '리소스 절감 또는 자동화/AI 내재화 경험',
+      '여전히 부족하다고 느끼는 역량 및 한계',
+      '역량과 자질 성장을 위한 노력',
+      '팀/조직에 긍정적으로 영향을 준 부분과 그렇지 못한 부분',
+      '가시적인 성과(매출, 유저, 거래 등) 향상 결과',
+    ];
+
+    let essayHtml = '';
+    const name = document.getElementById('inf-name')?.value?.trim() || data.i?.name || '';
+    if(name && SHEETS_API_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
+      // 일단 점수 먼저 표시
+      panelBody.innerHTML = '<div class="self-panel-items">' + rows + '</div><div id="panel-essay-area" style="padding:12px 16px;border-top:1px solid #EEF0F8;"><div style="font-size:11px;color:#94A3B8;text-align:center;">서술형 불러오는 중...</div></div>';
+      fetch(SHEETS_API_URL + '?action=get_cases_by_name&name=' + encodeURIComponent(name) + '&type=self')
+        .then(r => r.json())
+        .then(res => {
+          const essayArea = document.getElementById('panel-essay-area');
+          if(!essayArea) return;
+          const c = res.cases || {};
+          const hasEssay = essayLabels.some((_, i) => c['essay_' + i]);
+          if(!hasEssay) { essayArea.innerHTML = ''; return; }
+          let eHtml = '<div style="font-size:11px;font-weight:700;color:#6366F1;padding:4px 0 8px;border-bottom:1px solid #EEF0F8;margin-bottom:8px;">📝 서술형 답변</div>';
+          essayLabels.forEach((label, i) => {
+            const val = c['essay_' + i];
+            if(!val) return;
+            eHtml += '<div style="margin-bottom:10px;">'
+              + '<div style="font-size:10px;font-weight:700;color:#4338CA;margin-bottom:3px;">[서술형' + (i+1) + '] ' + label + '</div>'
+              + '<div style="font-size:12px;color:#1E293B;line-height:1.6;background:#F0F9FF;border-left:3px solid #6366F1;padding:6px 10px;border-radius:6px;white-space:pre-wrap;">' + val + '</div>'
+              + '</div>';
+          });
+          essayArea.innerHTML = eHtml;
+        })
+        .catch(() => {
+          const essayArea = document.getElementById('panel-essay-area');
+          if(essayArea) essayArea.innerHTML = '';
+        });
+    } else {
+      panelBody.innerHTML = '<div class="self-panel-items">' + rows + '</div>';
+    }
+
     const avg = count > 0 ? (total / count).toFixed(1) : (fallbackScore || '0.0');
     document.getElementById('panel-total-val').textContent = avg;
     panelTotal.style.display = 'flex';
@@ -2118,6 +2225,8 @@ function tempSave() {
     savedAt: new Date().toLocaleString('ko-KR')
   };
   document.querySelectorAll('.case-val').forEach(el => { data.cases[el.dataset.idx] = el.value; });
+  data.essays = {};
+  document.querySelectorAll('.essay-val').forEach(el => { data.essays[el.dataset.essayIdx] = el.value; });
   // 수습평가 리치텍스트 임시저장
   data.probRich = {};
   ['prob-q1','prob-q2','prob-q3','prob-q4'].forEach(id => {
@@ -2154,6 +2263,11 @@ function tempLoad(silent) {
         document.querySelectorAll('.case-val').forEach(el => {
           if(data.cases[el.dataset.idx]) el.value = data.cases[el.dataset.idx];
         });
+        if(data.essays) {
+          document.querySelectorAll('.essay-val').forEach(el => {
+            if(data.essays[el.dataset.essayIdx]) el.value = data.essays[el.dataset.essayIdx];
+          });
+        }
       }, 150);
     }
     // 수습평가 리치텍스트 복원
@@ -2808,30 +2922,60 @@ function renderViewer(resultUrl, type, evaluator) {
     const avg = count > 0 ? (total / count).toFixed(1) : '-';
     tableHtml += '<div style="text-align:right;padding:12px 0;font-size:14px;font-weight:800;color:#6366F1;">총점 평균: ' + avg + '</div>';
 
-    // 서술형 렌더링 함수 - 항목별로 번호+질문+사례 표시
+    // 서술형 렌더링 함수 - 항목별 사례 + 서술형 7개 문항
+    const essayLabels = [
+      '지난 1년간 기여한 성과 중, 가장 잘했던 내용과 공헌 이유',
+      '개발관련 빠른 테스트/실험 사례 (지난 1년)',
+      '리소스 절감 또는 자동화/AI 내재화 경험',
+      '여전히 부족하다고 느끼는 역량 및 한계',
+      '역량과 자질 성장을 위한 노력',
+      '팀/조직에 긍정적으로 영향을 준 부분과 그렇지 못한 부분',
+      '가시적인 성과(매출, 유저, 거래 등) 향상 결과',
+    ];
     function buildCaseHtml(casesObj) {
       if(!casesObj || Object.keys(casesObj).length === 0) return '';
-      let html = '<div class="admin-viewer-section">서술형 사례</div>';
-      Object.entries(casesObj).forEach(([idx, val]) => {
-        if(!val || !val.trim()) return;
-        const i = parseInt(idx);
-        const item = itemList[i];
-        if(!item) return;
-        const no = i + 1;
-        const category = item[0];
-        const itemName = item[1];
-        const criteria = item[2] || '';
-        const safeVal = val.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        html += '<div class="admin-case-box" style="margin-bottom:12px;">'
-          + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
-          + '<span style="background:#6366F1;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">' + no + '</span>'
-          + '<span style="font-size:11px;color:#94A3B8;">' + category + '</span>'
-          + '<span style="font-size:13px;font-weight:800;color:#1E293B;">' + itemName + '</span>'
-          + '</div>'
-          + '<div style="font-size:12px;color:#64748B;background:#F1F5F9;padding:6px 10px;border-radius:6px;margin-bottom:8px;line-height:1.6;">' + criteria + '</div>'
-          + '<div class="admin-case-text" style="background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:10px 14px;">' + safeVal + '</div>'
-          + '</div>';
-      });
+      let html = '';
+      // 항목별 사례 (case-val)
+      const itemCases = Object.entries(casesObj).filter(([k]) => !k.startsWith('essay_'));
+      if(itemCases.length > 0) {
+        html += '<div class="admin-viewer-section">항목별 사례</div>';
+        itemCases.forEach(([idx, val]) => {
+          if(!val || !val.trim()) return;
+          const i = parseInt(idx);
+          const item = itemList[i];
+          if(!item) return;
+          const safeVal = val.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          html += '<div class="admin-case-box" style="margin-bottom:12px;">'
+            + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
+            + '<span style="background:#6366F1;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">' + (i+1) + '</span>'
+            + '<span style="font-size:11px;color:#94A3B8;">' + item[0] + '</span>'
+            + '<span style="font-size:13px;font-weight:800;color:#1E293B;">' + item[1] + '</span>'
+            + '</div>'
+            + '<div style="font-size:12px;color:#64748B;background:#F1F5F9;padding:6px 10px;border-radius:6px;margin-bottom:8px;line-height:1.6;">' + (item[2]||'') + '</div>'
+            + '<div class="admin-case-text" style="background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:10px 14px;">' + safeVal + '</div>'
+            + '</div>';
+        });
+      }
+      // 서술형 7개 문항
+      const essayCases = Object.entries(casesObj).filter(([k]) => k.startsWith('essay_'));
+      if(essayCases.length > 0) {
+        html += '<div class="admin-viewer-section">서술형 문항</div>';
+        essayCases.forEach(([key, val]) => {
+          if(!val || !val.trim()) return;
+          const i = parseInt(key.replace('essay_', ''));
+          const label = essayLabels[i] || key;
+          const safeVal = val.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          html += '<div class="admin-case-box" style="margin-bottom:12px;">'
+            + '<div style="font-size:12px;font-weight:700;color:#4338CA;margin-bottom:6px;">[서술형' + (i+1) + '] ' + label + '</div>'
+            + '<div class="admin-case-text" style="background:#fff;border:1px solid #E2E8F0;border-radius:8px;padding:10px 14px;">' + safeVal + '</div>'
+            + '</div>';
+        });
+      }
+      // 구버전 호환 (key가 '0'인 경우 전체 텍스트)
+      if(casesObj['0'] && Object.keys(casesObj).length === 1) {
+        html = '<div class="admin-viewer-section">서술형 사례</div>'
+             + '<div class="admin-case-box"><div class="admin-case-text">' + casesObj['0'].replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div></div>';
+      }
       return html;
     }
 
@@ -2841,18 +2985,7 @@ function renderViewer(resultUrl, type, evaluator) {
       fetch(SHEETS_API_URL + '?action=get_cases_by_name&name=' + encodeURIComponent(info.name) + (type === 'down' && evaluator ? '&evaluator=' + encodeURIComponent(evaluator) : '') + '&type=' + type)
         .then(r => r.json())
         .then(res => {
-          // cases가 JSON 객체면 항목별, 텍스트면 전체 표시
-          let casesObj = res.cases || {};
-          // '0'키에 전체 텍스트로 온 경우 (구버전 호환)
-          if(casesObj['0'] && Object.keys(casesObj).length === 1) {
-            const text = casesObj['0'];
-            content.innerHTML = '<div class="admin-viewer-card">' + infoHtml + tableHtml
-              + '<div class="admin-viewer-section">서술형 사례</div>'
-              + '<div class="admin-case-box"><div class="admin-case-text">' + text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div></div>'
-              + '</div>';
-          } else {
-            content.innerHTML = '<div class="admin-viewer-card">' + infoHtml + tableHtml + buildCaseHtml(casesObj) + '</div>';
-          }
+          content.innerHTML = '<div class="admin-viewer-card">' + infoHtml + tableHtml + buildCaseHtml(res.cases || {}) + '</div>';
         })
         .catch(() => {
           content.innerHTML = '<div class="admin-viewer-card">' + infoHtml + tableHtml + '</div>';
