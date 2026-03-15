@@ -1492,7 +1492,7 @@ function getSaveData() {
     evaluator: document.getElementById('inf-evaluator')?.value || ''
   };
   const compact = { s: compress(scores.self), d1: compress(scores.d1), d2: compress(scores.d2), i: infoData };
-  try { return btoa(unescape(encodeURIComponent(JSON.stringify(compact)))); } catch(e) { return btoa(JSON.stringify(compact)); }
+  try { return btoa(unescape(encodeURIComponent(JSON.stringify(compact)))); } catch(e) { return ''; }
 }
 
 // ── 사례(서술형) 데이터만 별도 수집
@@ -1521,7 +1521,7 @@ function restoreFromURL() {
   const d = params.get('d');
   if(!d) return;
   try {
-    const data = JSON.parse(decodeURIComponent(atob(d)));
+    const data = JSON.parse(decodeURIComponent(escape(atob(d))));
 
     // 압축 포맷 (s, d1, d2, c, i) vs 구버전 포맷 (scores, cases, info) 자동 감지
     function expandScores(str) {
@@ -1990,7 +1990,7 @@ function renderPanelFromResultUrl(resultUrl, fallbackScore) {
 
     if(!dParam) throw new Error('URL 파싱 실패');
 
-    const data = JSON.parse(decodeURIComponent(atob(dParam)));
+    const data = JSON.parse(decodeURIComponent(escape(atob(dParam))));
 
     function expandScores(str) {
       if(!str) return {};
@@ -2660,7 +2660,7 @@ function renderViewer(resultUrl, type) {
     }
     if(!dParam) throw new Error('URL 파싱 실패');
 
-    const data = JSON.parse(decodeURIComponent(atob(dParam)));
+    const data = JSON.parse(decodeURIComponent(escape(atob(dParam))));
 
     function expandScores(str) {
       if(!str) return {};
@@ -2675,9 +2675,9 @@ function renderViewer(resultUrl, type) {
     const info       = data.i || data.info || {};
     const selfScores = data.s !== undefined ? expandScores(data.s) : (data.scores?.self || {});
     const downScores = data.d1 !== undefined ? expandScores(data.d1) : (data.scores?.d1 || {});
-    let   cases      = data.c || data.cases || {};
+    const cases      = data.c || data.cases || {};
     const showScores = type === 'self' ? selfScores : downScores;
-    const itemList   = ITEMS_DEV;
+    const itemList   = ITEMS_DEV; // 기본 항목 (추후 부서별 분기 가능)
 
     // 기본정보
     let infoHtml = '<div class="admin-viewer-info">';
@@ -2721,7 +2721,7 @@ function renderViewer(resultUrl, type) {
       return html;
     }
 
-    // URL에 사례 데이터가 있으면 바로 렌더링, 없으면 Sheets에서 불러오기
+    // URL에 사례 있으면 바로, 없으면 Sheets에서 불러오기
     if(Object.keys(cases).length > 0) {
       content.innerHTML = '<div class="admin-viewer-card">' + infoHtml + tableHtml + buildCaseHtml(cases) + '</div>';
     } else if(type === 'self' && info.name && SHEETS_API_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
