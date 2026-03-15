@@ -1498,7 +1498,20 @@ function getSaveData() {
 // ── 사례(서술형) 데이터만 별도 수집
 function getCaseData() {
   const caseData = {};
-  document.querySelectorAll('.case-val').forEach(el => { if(el.value.trim()) caseData[el.dataset.idx] = el.value.trim(); });
+  // 일반 평가 textarea
+  document.querySelectorAll('.case-val').forEach(el => {
+    if(el.value.trim()) caseData[el.dataset.idx] = el.value.trim();
+  });
+  // 수습리뷰 카드형 코멘트 (contenteditable div)
+  if(ITEMS === ITEMS_PROBATION) {
+    ITEMS_PROBATION.forEach((it, idx) => {
+      const box = document.getElementById('achieve-box-' + idx);
+      if(box) {
+        const txt = box.innerText.trim();
+        if(txt) caseData['prob_comment_' + idx] = txt;
+      }
+    });
+  }
   return caseData;
 }
 
@@ -1690,12 +1703,9 @@ async function submitToSlack() {
       });
     }
 
-    fetch(SHEETS_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: sheetsParams.toString(),
-      mode: 'no-cors'
-    }).catch(() => {});
+    // GET 방식으로 전송 (Apps Script no-cors POST는 body 손실 위험)
+    const getUrl = SHEETS_API_URL + '?' + sheetsParams.toString();
+    fetch(getUrl, { method: 'GET', mode: 'no-cors' }).catch(() => {});
   }
 
   function onSubmitDone() {
