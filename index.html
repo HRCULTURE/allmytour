@@ -309,7 +309,7 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 .admin-pw-err { color:#EF4444; font-size:12px; margin-top:8px; display:none; }
 
 /* ── 리뷰 원본 뷰어 ── */
-.admin-viewer-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; width:100vw; height:100vh; background:#0F172A; z-index:9999; overflow:hidden; }
+.admin-viewer-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; width:100vw; height:100vh; background:#F8FAFC; z-index:100000; overflow:hidden; }
 .admin-viewer-overlay.open { display:flex; flex-direction:column; }
 .admin-viewer-wrap { width:100%; padding:24px 40px 60px; box-sizing:border-box; }
 .admin-viewer-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
@@ -2933,13 +2933,5 @@ function renderViewer(resultUrl, type, evaluator) {
   </div>
 </div>
 
-<!-- 리뷰 원본 뷰어 -->
-<div class="admin-viewer-overlay" id="admin-viewer-overlay">
-  <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 28px; background:#1E293B; flex-shrink:0; width:100%; box-sizing:border-box;">
-    <div style="font-size:16px; font-weight:800; color:#fff;" id="viewer-title">📋 리뷰 원본</div>
-    <button onclick="closeViewer()" style="background:rgba(255,255,255,0.15); color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:13px; cursor:pointer;">✕ 닫기</button>
-  </div>
-  <div id="viewer-content" style="flex:1; overflow-y:auto; background:#F8FAFC; padding:24px;"></div>
-</div>
 </body>
 </html>
