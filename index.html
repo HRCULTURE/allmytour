@@ -2708,12 +2708,29 @@ function closeViewer() {
 }
 
 function openViewer(resultUrl, name, type, evaluator) {
-  let url = resultUrl || '';
-  if(type === 'down') {
-    if(!url.includes('view=down')) url += (url.includes('?') ? '&' : '?') + 'view=down';
-    if(evaluator) url += '&evaluator=' + encodeURIComponent(evaluator);
+  try {
+    let url = resultUrl || '';
+
+    // d 파라미터를 안전하게 재인코딩 (구글 시트 저장 시 인코딩 손상 대응)
+    const dMatch = url.match(/([?&]d=)([^&]+)(.*)?$/);
+    if(dMatch) {
+      try {
+        // 혹시 이미 디코딩된 상태라면 재인코딩
+        const rawD = dMatch[2];
+        const safeD = encodeURIComponent(decodeURIComponent(rawD));
+        url = url.slice(0, url.indexOf(dMatch[0])) + dMatch[1] + safeD + (dMatch[3] || '');
+      } catch(e2) { /* 인코딩 실패 시 원본 유지 */ }
+    }
+
+    if(type === 'down') {
+      if(!url.includes('view=down')) url += (url.includes('?') ? '&' : '?') + 'view=down';
+      if(evaluator) url += '&evaluator=' + encodeURIComponent(evaluator);
+    }
+
+    window.open(url, '_blank');
+  } catch(e) {
+    window.open(resultUrl || '', '_blank');
   }
-  window.open(url, '_blank');
 }
 
 function renderViewer(resultUrl, type) {
