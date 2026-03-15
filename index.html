@@ -2691,7 +2691,7 @@ function openAdminPw() {
 function closeAdminPw() {
   document.getElementById('admin-pw-modal').classList.remove('open');
 }
-async function checkAdminPw() {
+function checkAdminPw() {
   const name = document.getElementById('admin-pw-name').value.trim();
   const pw   = document.getElementById('admin-pw-input').value.trim();
   if(!name || !pw) {
@@ -2701,24 +2701,46 @@ async function checkAdminPw() {
   }
   const btn = document.querySelector('.admin-pw-btn');
   btn.textContent = '확인 중...'; btn.disabled = true;
-  try {
-    const res  = await fetch(SHEETS_API_URL + '?action=check_admin&name=' + encodeURIComponent(name) + '&pw=' + encodeURIComponent(pw));
-    const data = await res.json();
+
+  // JSONP로 CORS 우회
+  const cbName = '_adminCb_' + Date.now();
+  const script = document.createElement('script');
+  const cleanup = () => { delete window[cbName]; if(script.parentNode) script.parentNode.removeChild(script); };
+  const timer = setTimeout(() => {
+    cleanup();
+    document.getElementById('admin-pw-err').textContent = '응답 시간 초과. 잠시 후 다시 시도해주세요.';
+    document.getElementById('admin-pw-err').style.display = 'block';
+    btn.textContent = '확인'; btn.disabled = false;
+  }, 10000);
+
+  window[cbName] = function(data) {
+    clearTimeout(timer); cleanup();
+    btn.textContent = '확인'; btn.disabled = false;
     if(data.success) {
       currentAdminName = data.name;
       closeAdminPw();
       openAdmin();
     } else {
-      document.getElementById('admin-pw-err').textContent = data.error || '인증 실패';
+      document.getElementById('admin-pw-err').textContent = data.error || '비밀번호가 올바르지 않습니다';
       document.getElementById('admin-pw-err').style.display = 'block';
       document.getElementById('admin-pw-input').value = '';
       document.getElementById('admin-pw-input').focus();
     }
-  } catch(e) {
-    document.getElementById('admin-pw-err').textContent = '서버 오류: ' + e.message;
+  };
+
+  script.onerror = function() {
+    clearTimeout(timer); cleanup();
+    btn.textContent = '확인'; btn.disabled = false;
+    document.getElementById('admin-pw-err').textContent = '서버 연결 오류. Apps Script URL을 확인해주세요.';
     document.getElementById('admin-pw-err').style.display = 'block';
-  }
-  btn.textContent = '확인'; btn.disabled = false;
+  };
+
+  script.src = SHEETS_API_URL
+    + '?action=check_admin'
+    + '&name=' + encodeURIComponent(name)
+    + '&pw='   + encodeURIComponent(pw)
+    + '&callback=' + cbName;
+  document.head.appendChild(script);
 }
 async function openAdmin() {
   const el = document.getElementById('admin-overlay');
@@ -2734,21 +2756,40 @@ function closeAdmin() {
   el.classList.remove('open');
   document.body.style.overflow = '';
 }
-async function refreshAdminData() {
+function refreshAdminData() {
   const wrap = document.getElementById('admin-table-wrap');
-  if(!wrap) { setTimeout(refreshAdminData, 100); return; } // DOM 아직 준비 안됐으면 재시도
+  if(!wrap) { setTimeout(refreshAdminData, 100); return; }
   wrap.innerHTML = '<div class="admin-empty">🔄 데이터 불러오는 중...</div>';
-  try {
-    const res  = await fetch(SHEETS_API_URL + '?action=admin_all');
-    const data = await res.json();
-    if(!data.success) throw new Error(data.error || '조회 실패');
+
+  const cbName = '_adminAllCb_' + Date.now();
+  const script = document.createElement('script');
+  const cleanup = () => { delete window[cbName]; if(script.parentNode) script.parentNode.removeChild(script); };
+  const timer = setTimeout(() => {
+    cleanup();
+    const w = document.getElementById('admin-table-wrap');
+    if(w) w.innerHTML = '<div class="admin-empty">⚠️ 응답 시간 초과</div>';
+  }, 15000);
+
+  window[cbName] = function(data) {
+    clearTimeout(timer); cleanup();
+    if(!data.success) {
+      const w = document.getElementById('admin-table-wrap');
+      if(w) w.innerHTML = '<div class="admin-empty">⚠️ 실패: ' + (data.error||'조회 실패') + '</div>';
+      return;
+    }
     adminData = data;
     updateAdminStats();
     renderAdminTable(adminCurrentTab);
-  } catch(err) {
+  };
+
+  script.onerror = function() {
+    clearTimeout(timer); cleanup();
     const w = document.getElementById('admin-table-wrap');
-    if(w) w.innerHTML = '<div class="admin-empty">⚠️ 실패: ' + err.message + '</div>';
-  }
+    if(w) w.innerHTML = '<div class="admin-empty">⚠️ 서버 연결 오류</div>';
+  };
+
+  script.src = SHEETS_API_URL + '?action=admin_all&callback=' + cbName;
+  document.head.appendChild(script);
 }
 function updateAdminStats() {
   document.getElementById('stat-self').textContent = adminData.self.length;
