@@ -2550,11 +2550,9 @@ async function checkAdminPw() {
 }
 async function openAdmin() {
   const el = document.getElementById('admin-overlay');
-  document.body.appendChild(el);
+  document.body.appendChild(el); // body 직접 자식으로 이동
   el.classList.add('open');
   document.body.style.overflow = 'hidden';
-  // appendChild 후 DOM 안정화 대기
-  await new Promise(r => setTimeout(r, 0));
   await refreshAdminData();
 }
 function closeAdmin() {
@@ -2563,9 +2561,7 @@ function closeAdmin() {
   document.body.style.overflow = '';
 }
 async function refreshAdminData() {
-  const wrap = document.getElementById('admin-table-wrap');
-  if(!wrap) { setTimeout(refreshAdminData, 100); return; } // DOM 아직 준비 안됐으면 재시도
-  wrap.innerHTML = '<div class="admin-empty">🔄 데이터 불러오는 중...</div>';
+  document.getElementById('admin-table-wrap').innerHTML = '<div class="admin-empty">🔄 데이터 불러오는 중...</div>';
   try {
     const res  = await fetch(SHEETS_API_URL + '?action=admin_all');
     const data = await res.json();
@@ -2574,8 +2570,7 @@ async function refreshAdminData() {
     updateAdminStats();
     renderAdminTable(adminCurrentTab);
   } catch(err) {
-    const w = document.getElementById('admin-table-wrap');
-    if(w) w.innerHTML = '<div class="admin-empty">⚠️ 실패: ' + err.message + '</div>';
+    document.getElementById('admin-table-wrap').innerHTML = '<div class="admin-empty">⚠️ 실패: ' + err.message + '</div>';
   }
 }
 function updateAdminStats() {
