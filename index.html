@@ -1492,7 +1492,7 @@ function getSaveData() {
     evaluator: document.getElementById('inf-evaluator')?.value || ''
   };
   const compact = { s: compress(scores.self), d1: compress(scores.d1), d2: compress(scores.d2), i: infoData };
-  try { return btoa(unescape(encodeURIComponent(JSON.stringify(compact)))); } catch(e) { return ''; }
+  try { return encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(compact))))); } catch(e) { return ''; }
 }
 
 // ── 사례(서술형) 데이터만 별도 수집
@@ -1890,7 +1890,7 @@ function autoMerge() {
     try {
       const params = new URLSearchParams(line.trim().split('?')[1] || '');
       const d = params.get('d'); if(!d) return;
-      const data = JSON.parse(decodeURIComponent(atob(d)));
+      const data = JSON.parse(decodeURIComponent(escape(atob(d))));
       function expandScores(str) { if(!str) return {}; const out = {}; str.split(',').forEach(part => { const [k,v] = part.split(':'); if(k!==undefined&&v!==undefined) out[String(parseInt(k))]=parseInt(v); }); return out; }
       const d1 = expandScores(data.d1), d2 = expandScores(data.d2);
       let hasScore = false;
