@@ -1629,36 +1629,17 @@ async function submitToSlack() {
     successMsg = `<strong>${nameInput}</strong> 님에 대한 하향평가가 정상적으로 전달되었습니다. 📩<br>검토 후 평가결과가 안내될 예정입니다.`;
   }
 
-  // Sheets에도 저장 (셀프리뷰일 때만)
-  if(mode === 'self' && SHEETS_API_URL && SHEETS_API_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
-    // GET 방식으로 저장 (CORS 우회)
-    const sheetsParams = new URLSearchParams({
-      action: 'save',
-      mode: 'self',
-      name:        payload.name        || '',
-      dept:        payload.dept        || '',
-      employee_id: payload.employee_id || '',
-      self_score:  payload.self_score  || '',
-      result_url:  payload.result_url  || '',
-      pos:  document.getElementById('inf-pos')?.value  || '',
-      work: document.getElementById('inf-work')?.value || '',
-      join: document.getElementById('inf-join')?.value || '',
-      date: document.getElementById('inf-date')?.value || ''
-    });
-    fetch(SHEETS_API_URL + '?' + sheetsParams.toString()).catch(() => {});
-  }
-
-  // Sheets 저장 (셀프/하향/수습리뷰 모두)
+  // Sheets 저장 (셀프/하향/수습리뷰 — 단 한 번만)
   if(SHEETS_API_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
     const isProbSave = (ITEMS === ITEMS_PROBATION);
     const caseData = getCaseData();
+    let sheetsParams;
 
-    // 수습리뷰 전용 저장
     if(isProbSave) {
-      const probTotalScore = document.getElementById('prob-total-val')?.textContent || document.getElementById('d-down2')?.textContent || '0.0';
-      const sheetsParams = new URLSearchParams({
+      // 수습리뷰
+      const probTotalScore = document.getElementById('prob-total-val')?.textContent || '0.0';
+      sheetsParams = new URLSearchParams({
         action: 'save_probation',
-        mode: 'probation',
         name:        payload.name        || '',
         dept:        payload.dept        || '',
         employee_id: payload.employee_id || '',
@@ -1675,23 +1656,30 @@ async function submitToSlack() {
         prob_q4: probQ4,
         cases: JSON.stringify(caseData)
       });
-      fetch(SHEETS_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: sheetsParams.toString(),
-        mode: 'no-cors'
-      }).catch(() => {});
-
-    } else {
-      // 셀프/하향 저장
-      const sheetsParams = new URLSearchParams({
-        action: mode === 'self' ? 'save_self' : 'save_down',
-        mode,
+    } else if(mode === 'self') {
+      // 셀프리뷰
+      sheetsParams = new URLSearchParams({
+        action: 'save_self',
         name:        payload.name        || '',
         dept:        payload.dept        || '',
         employee_id: payload.employee_id || '',
         self_score:  payload.self_score  || '',
-        down_score:  mode === 'self' ? '' : (document.getElementById('d-down2')?.textContent || ''),
+        result_url:  payload.result_url  || '',
+        pos:  document.getElementById('inf-pos')?.value  || '',
+        work: document.getElementById('inf-work')?.value || '',
+        join: document.getElementById('inf-join')?.value || '',
+        date: document.getElementById('inf-date')?.value || '',
+        cases: JSON.stringify(caseData)
+      });
+    } else {
+      // 하향리뷰
+      sheetsParams = new URLSearchParams({
+        action: 'save_down',
+        name:        payload.name        || '',
+        dept:        payload.dept        || '',
+        employee_id: payload.employee_id || '',
+        self_score:  payload.self_score  || '',
+        down_score:  document.getElementById('d-down2')?.textContent || '0.0',
         evaluator:   document.getElementById('inf-evaluator')?.value || '',
         result_url:  payload.result_url  || '',
         pos:  document.getElementById('inf-pos')?.value  || '',
@@ -1700,13 +1688,14 @@ async function submitToSlack() {
         date: document.getElementById('inf-date')?.value || '',
         cases: JSON.stringify(caseData)
       });
-      fetch(SHEETS_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: sheetsParams.toString(),
-        mode: 'no-cors'
-      }).catch(() => {});
     }
+
+    fetch(SHEETS_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: sheetsParams.toString(),
+      mode: 'no-cors'
+    }).catch(() => {});
   }
 
   function onSubmitDone() {
