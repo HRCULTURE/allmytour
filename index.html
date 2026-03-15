@@ -605,6 +605,26 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
           <button onclick="probFmtTarget('prob-q4-box','insertOrderedList')">&#8801;</button>
           <button onclick="probFmtTarget('prob-q4-box','insertUnorderedList')">&#8942;</button>
         </div>
+
+        <!-- 수습 통과 여부 -->
+        <div style="margin-top:20px; padding-top:18px; border-top:2px solid #F1F5F9;">
+          <div style="font-size:14px; font-weight:700; color:#1A1F27; margin-bottom:12px;">
+            수습 통과 여부 <span style="color:#EF4444;">*</span>
+          </div>
+          <div style="display:flex; gap:12px;">
+            <button id="prob-pass-y" onclick="selectProbPass('Y')"
+              style="flex:1; padding:14px; border-radius:12px; border:2px solid #E2E8F0; background:#fff;
+                     font-size:15px; font-weight:800; color:#94A3B8; cursor:pointer; transition:all 0.2s;">
+              ✅ 통과 (Y)
+            </button>
+            <button id="prob-pass-n" onclick="selectProbPass('N')"
+              style="flex:1; padding:14px; border-radius:12px; border:2px solid #E2E8F0; background:#fff;
+                     font-size:15px; font-weight:800; color:#94A3B8; cursor:pointer; transition:all 0.2s;">
+              ❌ 미통과 (N)
+            </button>
+          </div>
+          <input type="hidden" id="prob-pass" value="">
+        </div>
       </div>
     </div>
   </div>
@@ -991,6 +1011,18 @@ function probFmt(cmd) {
 function probFmtTarget(boxId, cmd) {
   const box = document.getElementById(boxId);
   if(box) { box.focus(); document.execCommand(cmd, false, null); }
+}
+function selectProbPass(val) {
+  document.getElementById('prob-pass').value = val;
+  const btnY = document.getElementById('prob-pass-y');
+  const btnN = document.getElementById('prob-pass-n');
+  if(val === 'Y') {
+    btnY.style.background = '#ECFDF5'; btnY.style.borderColor = '#10B981'; btnY.style.color = '#065F46';
+    btnN.style.background = '#fff';    btnN.style.borderColor = '#E2E8F0'; btnN.style.color = '#94A3B8';
+  } else {
+    btnN.style.background = '#FEF2F2'; btnN.style.borderColor = '#EF4444'; btnN.style.color = '#991B1B';
+    btnY.style.background = '#fff';    btnY.style.borderColor = '#E2E8F0'; btnY.style.color = '#94A3B8';
+  }
 }
 function syncAchieveVal(idx) {
   const box = document.getElementById('achieve-box-' + idx);
@@ -1690,6 +1722,10 @@ async function submitToSlack() {
   const probQ2 = document.getElementById('prob-q2')?.value?.trim() || '';
   const probQ3 = document.getElementById('prob-q3')?.value?.trim() || '';
   const probQ4 = document.getElementById('prob-q4')?.value?.trim() || '';
+  if(ITEMS === ITEMS_PROBATION) {
+    const probPass = document.getElementById('prob-pass')?.value || '';
+    if(!probPass) return alert("수습 통과 여부를 선택해주세요.");
+  }
 
   const payload = {
     name: nameInput,
@@ -1741,6 +1777,7 @@ async function submitToSlack() {
         prob_q2: b64(probQ2),
         prob_q3: b64(probQ3),
         prob_q4: b64(probQ4),
+        prob_pass: document.getElementById('prob-pass')?.value || '',
       });
     } else if(mode === 'self') {
       // 셀프리뷰 — 서술형 사례 수집
