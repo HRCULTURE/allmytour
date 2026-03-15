@@ -2898,22 +2898,20 @@ function renderAdminTable(tab) {
     });
     wrap.innerHTML = t + '</tbody></table>';
   } else if(tab === 'probation') {
-    let t = '<table class="admin-table"><thead><tr><th>제출일시</th><th>평가자</th><th>평가대상자</th><th>부서</th><th>수습점수</th><th>통과여부</th><th>원본</th></tr></thead><tbody>';
+    let t = '<table class="admin-table"><thead><tr><th>제출일시</th><th>성명</th><th>부서</th><th>직위</th><th>통과여부</th><th>원본</th></tr></thead><tbody>';
     rows.forEach((r) => {
       const safeUrl  = encodeURIComponent(r['result_url'] || '');
-      const safeName = (r['평가대상자'] || '').replace(/"/g, '&quot;');
-      const safeEval = (r['평가자'] || '').replace(/"/g, '&quot;');
+      const safeName = (r['성명'] || '').replace(/"/g, '&quot;');
       const passVal  = r['수습통과여부'] || '-';
       const passColor = passVal === 'Y' || passVal === '통과' ? '#10B981' : (passVal === 'N' || passVal === '미통과' ? '#EF4444' : '#94A3B8');
       t += '<tr>'
         + '<td style="white-space:nowrap;">' + (r['제출일시']||'-') + '</td>'
-        + '<td>' + (r['평가자']||'-') + '</td>'
-        + '<td><strong>' + (r['평가대상자']||'-') + '</strong></td>'
+        + '<td><strong>' + (r['성명']||'-') + '</strong></td>'
         + '<td>' + (r['부서']||'-') + '</td>'
-        + '<td><span class="admin-score" style="background:#10B981;">' + (r['수습점수']||'-') + '</span></td>'
+        + '<td>' + (r['직위']||'-') + '</td>'
         + '<td><span style="font-weight:700;color:' + passColor + ';">' + passVal + '</span></td>'
         + '<td>' + (r['result_url']
-            ? '<button class="admin-view-btn" data-url="' + safeUrl + '" data-name="' + safeName + '" data-evaluator="' + safeEval + '" data-tab="prob" style="background:none;border:1.5px solid #A7F3D0;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;color:#10B981;font-weight:700;">📋 원본 보기</button>'
+            ? '<button class="admin-view-btn" data-url="' + safeUrl + '" data-name="' + safeName + '" data-tab="prob" style="background:none;border:1.5px solid #A7F3D0;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;color:#10B981;font-weight:700;">📋 원본 보기</button>'
             : '-') + '</td>'
         + '</tr>';
     });
