@@ -2039,7 +2039,7 @@ function onPanelNameInput(val) {
   if(status) status.textContent = val ? 'Enter 또는 조회 버튼을 누르세요' : '';
 }
 
-async function searchSelfByName(name) {
+function searchSelfByName(name) {
   name = (name || '').trim();
   if(!name) return;
 
@@ -2057,29 +2057,32 @@ async function searchSelfByName(name) {
   panelStatus.textContent = '';
   panelTotal.style.display = 'none';
 
-  try {
-    const url = SHEETS_API_URL + '?action=query&name=' + encodeURIComponent(name);
-    const res  = await fetch(url);
-    const data = await res.json();
+  const _qCb = '_queryCb_' + Date.now();
+  const _qS  = document.createElement('script');
+  const _qCl = () => { delete window[_qCb]; if(_qS.parentNode) _qS.parentNode.removeChild(_qS); };
+  const _qTimer = setTimeout(() => {
+    _qCl();
+    panelBody.innerHTML = '<div class="panel-empty">⚠️ 응답 시간 초과</div>';
+  }, 10000);
 
+  window[_qCb] = function(data) {
+    clearTimeout(_qTimer); _qCl();
     if(!data.success) {
       panelBody.innerHTML = '<div class="panel-empty">❌ ' + (data.error || '결과를 찾을 수 없습니다') + '</div>';
       panelName.textContent = '결과 없음';
       return;
     }
-
     panelName.textContent = data.name + ' 님';
     panelStatus.textContent = '제출일: ' + (data.submitted || '-');
-
-    // 기본정보 자동 입력
     autoFillInfo(data);
-
-    // result_url에서 점수 파싱
     renderPanelFromResultUrl(data.result_url, data.self_score);
-
-  } catch(err) {
-    panelBody.innerHTML = '<div class="panel-empty">⚠️ 조회 실패<br>' + err.message + '</div>';
-  }
+  };
+  _qS.onerror = function() {
+    clearTimeout(_qTimer); _qCl();
+    panelBody.innerHTML = '<div class="panel-empty">⚠️ 조회 실패</div>';
+  };
+  _qS.src = SHEETS_API_URL + '?action=query&name=' + encodeURIComponent(name) + '&callback=' + _qCb;
+  document.head.appendChild(_qS);
 }
 
 function autoFillInfo(data) {
@@ -2319,6 +2322,13 @@ function tempSave() {
   }
   data.mode = mode;
   data.isProbation = (ITEMS === ITEMS_PROBATION);
+  // 셀프패널 상태 저장 (하향리뷰 시 참고용)
+  const _panelInput = document.getElementById('panel-name-input');
+  const _panelName  = document.getElementById('panel-name');
+  if(_panelInput && _panelInput.value) {
+    data.selfPanelName = _panelInput.value;
+    data.selfPanelVisible = document.getElementById('self-ref-panel')?.classList.contains('visible') || false;
+  }
   localStorage.setItem('hr_temp_save', JSON.stringify(data));
   alert('✅ 임시저장 완료!\n다음에 페이지를 열면 자동으로 불러옵니다.');
 }
@@ -2367,6 +2377,15 @@ function tempLoad(silent) {
     }
     ITEMS.forEach((_, idx) => refreshRow(idx));
     calculate();
+    // 셀프패널 복원 (하향리뷰 모드일 때)
+    if(data.selfPanelName && data.selfPanelVisible) {
+      setTimeout(() => {
+        const _inp = document.getElementById('panel-name-input');
+        if(_inp) _inp.value = data.selfPanelName;
+        showSelfPanel(true);
+        searchSelfByName(data.selfPanelName);
+      }, 500);
+    }
     return true;
   } catch(e) { return false; }
 }
