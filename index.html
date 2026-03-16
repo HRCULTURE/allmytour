@@ -2633,18 +2633,20 @@ function renderTargetList() {
   // 입사월 기준 대상자: 재직/휴직 중이고 입사월 = 이번 달인 사람
   const joinMonthMatch = t => {
     if(!t.joinDate) return false;
-    // 다양한 날짜 형식 지원: YYYY-MM-DD, YYYY.MM.DD, YYYY/MM/DD
     const parts = t.joinDate.replace(/\./g, '-').replace(/\//g, '-').split('-');
     if(parts.length < 2) return false;
-    const m = parseInt(parts[1], 10);
-    return m === thisMonth;
+    return parseInt(parts[1], 10) === thisMonth;
   };
   const isActive = t => t.status === '재직' || (t.status && t.status.includes('휴직'));
 
-  // 이번달 평가 대상자 = 재직 중 + 입사월이 이번 달
-  const thisMonthTargets = evalTargets.filter(t => isActive(t) && joinMonthMatch(t));
-  const doneCount = thisMonthTargets.filter(t => submittedNames.has(t.name)).length;
-  const total     = thisMonthTargets.length;
+  // 일반 평가 대상자 (evalType === 'regular')
+  const regularTargets   = evalTargets.filter(t => t.evalType === 'regular'  && isActive(t) && joinMonthMatch(t));
+  // 수습 평가 대상자 (evalType === 'probation')
+  const probationTargets = evalTargets.filter(t => t.evalType === 'probation' && isActive(t));
+
+  const allThisMonth = [...regularTargets, ...probationTargets];
+  const doneCount = allThisMonth.filter(t => submittedNames.has(t.name)).length;
+  const total     = allThisMonth.length;
 
   document.getElementById('stat-target').textContent = total;
   document.getElementById('stat-target-sub').textContent =
@@ -2654,62 +2656,78 @@ function renderTargetList() {
     (total ? Math.round(doneCount / total * 100) : 0) + '%';
 
   // 탭 필터
-  let list = thisMonthTargets; // 기본: 이번달 대상자
-  if(targetTabState === 'all')     list = thisMonthTargets;
-  if(targetTabState === 'active')  list = thisMonthTargets; // 이미 재직자만
-  if(targetTabState === 'retired') list = evalTargets.filter(t => t.status === '퇴직' && joinMonthMatch(t));
-  if(targetTabState === 'done')    list = thisMonthTargets.filter(t => submittedNames.has(t.name));
-  if(targetTabState === 'todo')    list = thisMonthTargets.filter(t => !submittedNames.has(t.name));
-
-  const wrap = document.getElementById('target-list');
-  if(!list.length) {
-    wrap.innerHTML = '<div style="color:#64748B;font-size:13px;grid-column:1/-1;padding:20px 0;text-align:center;">해당하는 직원이 없습니다.</div>';
-    return;
+  let regularList   = regularTargets;
+  let probationList = probationTargets;
+  if(targetTabState === 'done') {
+    regularList   = regularTargets.filter(t => submittedNames.has(t.name));
+    probationList = probationTargets.filter(t => submittedNames.has(t.name));
+  }
+  if(targetTabState === 'todo') {
+    regularList   = regularTargets.filter(t => !submittedNames.has(t.name));
+    probationList = probationTargets.filter(t => !submittedNames.has(t.name));
   }
 
-  wrap.innerHTML = list.map(t => {
+  // 카드 생성 함수
+  function makeCard(t, isProbation) {
     const done = submittedNames.has(t.name);
     const s    = statusStyle(t.status);
-    // salHistory 또는 history 키 둘 다 지원
     const hist = t.salHistory || t.history || [];
     const latest = hist.length ? hist[hist.length - 1] : null;
 
-    // 연봉 이력 행들
     const historyRows = hist.map((h, idx) => {
       const isLatest = idx === hist.length - 1;
       return '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);gap:8px;">'
-        + '<span style="font-size:10px;color:#64748B;white-space:nowrap;">' + (h.start||h.contractStart||'-') + ' ~ ' + (h.end||h.expiry||'-') + '</span>'
+        + '<span style="font-size:10px;color:#64748B;white-space:nowrap;">' + (h.start||'-') + ' ~ ' + (h.end||'-') + '</span>'
         + '<span style="font-size:11px;font-weight:' + (isLatest ? '800' : '500') + ';color:' + (isLatest ? '#A5B4FC' : '#475569') + ';white-space:nowrap;">'
         + fmtSalaryFull(h.salary)
         + (isLatest ? '&nbsp;<span style="font-size:9px;background:#4F46E5;color:#fff;padding:1px 5px;border-radius:3px;vertical-align:middle;">현재</span>' : '')
-        + '</span>'
-        + '</div>';
+        + '</span></div>';
     }).join('');
 
-    return '<div style="background:' + s.bg + ';border:1px solid ' + s.border + ';border-radius:12px;padding:14px 16px;">'
-      // 헤더: 이름 + 상태뱃지 + 제출뱃지
+    // 수습 카드는 주황 테두리로 구분
+    const cardBorder = isProbation ? '1px solid rgba(245,158,11,0.5)' : '1px solid ' + s.border;
+    const cardBg     = isProbation ? 'rgba(245,158,11,0.08)' : s.bg;
+
+    return '<div style="background:' + cardBg + ';border:' + cardBorder + ';border-radius:12px;padding:14px 16px;">'
       + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
       +   '<div style="display:flex;align-items:center;gap:6px;">'
       +     '<span style="font-size:14px;font-weight:800;color:' + s.nameColor + ';">' + t.name + '</span>'
       +     '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:' + s.badge + ';color:#fff;">' + s.badgeTxt + '</span>'
+      +     (isProbation ? '<span style="font-size:9px;background:#B45309;color:#FCD34D;padding:2px 6px;border-radius:4px;font-weight:700;">수습중</span>' : '')
       +     (done ? '<span style="font-size:9px;background:#16A34A;color:#fff;padding:2px 6px;border-radius:4px;font-weight:700;">✅ 제출</span>' : '')
       +   '</div>'
       + '</div>'
-      // 기본 정보
       + '<div style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px;">'
-      +   '<div style="display:flex;justify-content:space-between;font-size:10px;"><span style="color:#64748B;">📅 계약시작일</span><span style="color:#94A3B8;">' + (t.joinDate||latest?.start||'-') + '</span></div>'
-      +   '<div style="display:flex;justify-content:space-between;font-size:10px;"><span style="color:#64748B;">📋 계약만료일</span><span style="color:#94A3B8;">' + (latest?.end||'-') + '</span></div>'
+      +   '<div style="display:flex;justify-content:space-between;font-size:10px;"><span style="color:#64748B;">📅 입사일</span><span style="color:#94A3B8;">' + (t.joinDate||'-') + '</span></div>'
+      +   (isProbation
+          ? '<div style="display:flex;justify-content:space-between;font-size:10px;"><span style="color:#F59E0B;">⏰ 수습만료일</span><span style="color:#FCD34D;font-weight:700;">' + (t.probExpiry||'-') + '</span></div>'
+          : '<div style="display:flex;justify-content:space-between;font-size:10px;"><span style="color:#64748B;">📋 계약만료일</span><span style="color:#94A3B8;">' + (latest?.end||'-') + '</span></div>')
       +   '<div style="display:flex;justify-content:space-between;font-size:11px;"><span style="color:#64748B;">💰 현재연봉</span><span style="font-weight:800;color:#A5B4FC;">' + fmtSalaryFull(latest?.salary||t.salary) + '</span></div>'
       + '</div>'
-      // 연봉 이력 (1건 이상일 때 표시)
-      + (hist.length > 0
+      + (hist.length > 1
         ? '<details style="margin-top:4px;">'
           + '<summary style="font-size:10px;color:#6366F1;cursor:pointer;font-weight:700;list-style:none;">📈 연봉 이력 ' + hist.length + '건 보기</summary>'
           + '<div style="margin-top:6px;">' + historyRows + '</div>'
           + '</details>'
         : '')
       + '</div>';
-  }).join('');
+  }
+
+  const wrap = document.getElementById('target-list');
+
+  // 일반 + 수습 합쳐서 이름순 정렬 후 한 목록에 렌더링
+  const combinedList = [
+    ...regularList.map(t => ({ ...t, _isProbation: false })),
+    ...probationList.map(t => ({ ...t, _isProbation: true }))
+  ].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+
+  const wrap = document.getElementById('target-list');
+  if(!combinedList.length) {
+    wrap.innerHTML = '<div style="color:#64748B;font-size:13px;grid-column:1/-1;padding:20px 0;text-align:center;">해당하는 직원이 없습니다.</div>';
+    return;
+  }
+
+  wrap.innerHTML = combinedList.map(t => makeCard(t, t._isProbation)).join('');
 }
 
 // ── 탭 전환 ──────────────────────────────────────────────────
@@ -2733,13 +2751,11 @@ function updateTargetStat() {
   }
   const submittedNames = getSubmittedNames();
   const thisMonth = new Date().getMonth() + 1;
-  const thisMonthTargets = evalTargets.filter(t => {
-    const isActive = t.status === '재직' || (t.status && t.status.includes('휴직'));
-    const m = t.joinDate ? parseInt(t.joinDate.replace(/[./]/g,'-').split('-')[1]||'0', 10) : 0;
-    return isActive && m === thisMonth;
-  });
-  const total     = thisMonthTargets.length;
-  const doneCount = thisMonthTargets.filter(t => submittedNames.has(t.name)).length;
+  const isActiveT = t => t.status === '재직' || (t.status && t.status.includes('휴직'));
+  const regularT   = evalTargets.filter(t => t.evalType === 'regular'   && isActiveT(t) && parseInt((t.joinDate||'').replace(/[./]/g,'-').split('-')[1]||'0',10) === thisMonth);
+  const probationT = evalTargets.filter(t => t.evalType === 'probation' && isActiveT(t));
+  const total     = regularT.length + probationT.length;
+  const doneCount = [...regularT, ...probationT].filter(t => submittedNames.has(t.name)).length;
   document.getElementById('stat-target').textContent = total;
   document.getElementById('stat-target-sub').textContent = '✅ ' + doneCount + '명 / ⏳ ' + (total - doneCount) + '명';
 }
