@@ -332,7 +332,7 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 .admin-viewer-section { font-size:13px; font-weight:800; color:#6366F1; padding:8px 0 4px; border-bottom:2px solid #EEF0F8; margin:16px 0 8px; }
 .admin-case-box { background:#F8FAFC; border-radius:10px; padding:14px 16px; margin-top:8px; }
 .admin-case-label { font-size:11px; font-weight:700; color:#94A3B8; margin-bottom:6px; }
-.admin-case-text { font-size:13px; color:#1E293B; line-height:1.7; white-space:pre-wrap; }
+.admin-case-text { font-size:13px; color:#1E293B; line-height:1.7; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word; }
 
 /* ── 관리자 필터 ── */
 .admin-filters { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
@@ -1647,18 +1647,22 @@ function restoreFromURL() {
         // viewerMode면 즉시 사례 카드 렌더링
         setTimeout(() => { if(viewerMode) renderViewerCases(data.c); }, 200);
       } else if(data.i?.name && SHEETS_API_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
-        fetch(SHEETS_API_URL + '?action=get_cases&name=' + encodeURIComponent(data.i.name))
-          .then(r => r.json())
-          .then(res => {
-            if(res.success && res.cases) {
-              Object.entries(res.cases).forEach(([idx,v]) => {
-                const el = document.querySelector('.case-val[data-idx="'+idx+'"]');
-                if(el) el.value = v;
-              });
-              // viewerMode면 Sheets에서 가져온 사례도 카드 렌더링
-              if(viewerMode) renderViewerCases(res.cases);
-            }
-          }).catch(() => {});
+        const _cb1 = '_casesCb1_' + Date.now();
+        const _s1 = document.createElement('script');
+        const _cl1 = () => { delete window[_cb1]; if(_s1.parentNode) _s1.parentNode.removeChild(_s1); };
+        window[_cb1] = function(res) {
+          _cl1();
+          if(res.success && res.cases) {
+            Object.entries(res.cases).forEach(([idx,v]) => {
+              const el = document.querySelector('.case-val[data-idx="'+idx+'"]');
+              if(el) el.value = v;
+            });
+            if(viewerMode) renderViewerCases(res.cases);
+          }
+        };
+        _s1.onerror = _cl1;
+        _s1.src = SHEETS_API_URL + '?action=get_cases&name=' + encodeURIComponent(data.i.name) + '&callback=' + _cb1;
+        document.head.appendChild(_s1);
       }
     } else if(data.scores) {
       // 구버전 포맷 호환
@@ -2161,9 +2165,11 @@ function renderPanelFromResultUrl(resultUrl, fallbackScore) {
     if(name && SHEETS_API_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
       // 일단 점수 먼저 표시
       panelBody.innerHTML = '<div class="self-panel-items">' + rows + '</div><div id="panel-essay-area" style="padding:12px 16px;border-top:1px solid #EEF0F8;"><div style="font-size:11px;color:#94A3B8;text-align:center;">서술형 불러오는 중...</div></div>';
-      fetch(SHEETS_API_URL + '?action=get_cases_by_name&name=' + encodeURIComponent(name) + '&type=self')
-        .then(r => r.json())
-        .then(res => {
+      const _cb2 = '_casesCb2_' + Date.now();
+      const _s2 = document.createElement('script');
+      const _cl2 = () => { delete window[_cb2]; if(_s2.parentNode) _s2.parentNode.removeChild(_s2); };
+      window[_cb2] = function(res) {
+        _cl2();
           const essayArea = document.getElementById('panel-essay-area');
           if(!essayArea) return;
           const c = res.cases || {};
@@ -2201,11 +2207,14 @@ function renderPanelFromResultUrl(resultUrl, fallbackScore) {
               + '</div>';
           });
           essayArea.innerHTML = eHtml;
-        })
-        .catch(() => {
-          const essayArea = document.getElementById('panel-essay-area');
-          if(essayArea) essayArea.innerHTML = '';
-        });
+      };
+      _s2.onerror = function() {
+        _cl2();
+        const essayArea = document.getElementById('panel-essay-area');
+        if(essayArea) essayArea.innerHTML = '';
+      };
+      _s2.src = SHEETS_API_URL + '?action=get_cases_by_name&name=' + encodeURIComponent(name) + '&type=self&callback=' + _cb2;
+      document.head.appendChild(_s2);
     } else {
       panelBody.innerHTML = '<div class="self-panel-items">' + rows + '</div>';
     }
@@ -2257,7 +2266,7 @@ function renderViewerCases(casesObj) {
     html += '<span style="font-size:11px;color:#94A3B8;font-weight:600;">' + itemCategory + '</span>';
     html += '<span style="font-size:13px;font-weight:800;color:#4338CA;">' + itemName + '</span>';
     html += '</div>';
-    html += '<div style="padding:14px 16px;font-size:13px;color:#1E293B;line-height:1.8;white-space:pre-wrap;">' + safeVal + '</div>';
+    html += '<div style="padding:14px 16px;font-size:13px;color:#1E293B;line-height:1.8;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;">' + safeVal + '</div>';
     html += '</div>';
   });
 
@@ -3161,7 +3170,7 @@ function renderViewer(resultUrl, type, evaluator) {
             + '<span style="background:#6366F1;color:#fff;border-radius:5px;padding:1px 7px;font-size:11px;font-weight:800;">' + (i+1) + '</span>'
             + '<span style="font-size:11px;color:#94A3B8;">' + item[0] + '</span>'
             + '</div>'
-            + '<div style="font-size:12px;color:#374151;padding:10px 14px;line-height:1.7;flex:1;">' + safeVal + '</div>'
+            + '<div style="font-size:12px;color:#374151;padding:10px 14px;line-height:1.7;flex:1;word-break:break-word;overflow-wrap:break-word;">' + safeVal + '</div>'
             + '</div>';
         });
         html += '</div>';
@@ -3181,7 +3190,7 @@ function renderViewer(resultUrl, type, evaluator) {
             + '<span style="font-size:11px;font-weight:800;color:#4338CA;">[서술형' + (i+1) + ']</span>'
             + '<span style="font-size:11px;color:#64748B;margin-left:6px;">' + label + '</span>'
             + '</div>'
-            + '<div style="font-size:12px;color:#374151;padding:10px 14px;line-height:1.7;flex:1;">' + safeVal + '</div>'
+            + '<div style="font-size:12px;color:#374151;padding:10px 14px;line-height:1.7;flex:1;word-break:break-word;overflow-wrap:break-word;">' + safeVal + '</div>'
             + '</div>';
         });
         html += '</div>';
