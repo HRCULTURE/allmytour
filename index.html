@@ -3076,7 +3076,7 @@ function openViewer(resultUrl, name, type, evaluator) {
     return;
   }
 
-  titleEl.textContent = '📋 ' + (name || '리뷰 원본') + (type === 'down' ? ' (하향리뷰)' : ' (셀프리뷰)');
+  titleEl.textContent = '📋 ' + (name || '리뷰 원본') + (type === 'down' ? ' (하향리뷰)' : type === 'prob' ? ' (수습리뷰)' : ' (셀프리뷰)') + (evaluator && (type === 'down' || type === 'prob') ? '  ·  평가자: ' + evaluator : '');
   contentEl.innerHTML = '<div style="text-align:center;padding:60px;color:#94A3B8;font-size:14px;">🔄 불러오는 중...</div>';
   overlay.classList.add('open');
 
@@ -3121,6 +3121,11 @@ function renderViewer(resultUrl, type, evaluator) {
     fields.forEach(([label, val]) => {
       infoHtml += '<div class="admin-viewer-field"><div class="admin-viewer-field-label">' + label + '</div><div class="admin-viewer-field-val">' + (val || '-') + '</div></div>';
     });
+    // 평가자 (하향리뷰·수습리뷰일 때 강조 표시)
+    if(type === 'down' || type === 'prob') {
+      const evalName = evaluator || info.evaluator || '-';
+      infoHtml += '<div class="admin-viewer-field" style="grid-column:1/-1;background:#F0F4FF;border:1.5px solid #C7D2FE;border-radius:10px;padding:10px 14px;"><div class="admin-viewer-field-label" style="color:#6366F1;">👤 평가자 (작성자)</div><div class="admin-viewer-field-val" style="color:#4338CA;font-size:16px;font-weight:800;">' + evalName + '</div></div>';
+    }
     // 수습통과여부 (prob 타입일 때만)
     if(type === 'prob') {
       const passRaw = info.prob_pass || '';
