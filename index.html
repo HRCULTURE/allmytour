@@ -636,31 +636,6 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
     </div>
   </div>
 
-  <div id="nondev-down-essay-section" style="display:none;">
-    <div class="table-card" style="padding:28px; margin-bottom:8px;">
-      <div style="font-size:15px; font-weight:800; color:#1A1F27; margin-bottom:6px;">이번 분기 팀원의 성과를 평가한다면?<span style="color:#EF4444;"> *</span></div>
-      <div style="font-size:12px; color:#4E5968; background:#F8F9FF; border:1px solid #E8ECF8; border-radius:10px; padding:14px 16px; margin-bottom:16px; line-height:1.95;">
-        구체적인 사례를 함께 적어주시면 보다 정확하게 피드백을 전달하는 데 도움이 됩니다.<br>
-        <b>· 첫째, 직원이 수행한 업무에 대해 어떤 성과를 냈고, 이를 어떻게 평가하는지 적어주세요.</b><br>
-        <span style="color:#64748B; padding-left:12px;">: 직원이 기여한 부분을 중심으로 이루어낸 성과와 결과를 구체적으로 작성해주세요. 예를 들어, 업무 목표 달성 정도, 팀워크, 프로젝트 기여도 등을 평가해주시면 됩니다.</span><br>
-        <b>· 둘째, 직원이 어떤 부분에서 성장했고, 어떤 역량을 발휘했는지 구체적으로 적어주세요.</b><br>
-        <span style="color:#64748B; padding-left:12px;">: 직원이 잘한 부분과 성장을 보여주는 사례나 점수를 통해, 직원의 긍정적인 면을 명확히 해주세요.</span><br>
-        <b>· 셋째, 개선이 필요한 점에 대해 구체적으로 기재해주세요.</b><br>
-        <span style="color:#64748B; padding-left:12px;">: 직원이 향후 더 성장할 수 있도록 개선이 필요한 부분을 상세히 작성해주세요. 예를 들어, 업무 처리 속도, 커뮤니케이션 능력, 리더십, 문제 해결 능력 등 구체적인 피드백을 제공해 주세요.</span>
-      </div>
-      <div class="prob-richbox" id="nondev-down-perf-box" contenteditable="true" placeholder="코멘트 입력하기 (필수)" style="min-height:140px;"></div>
-      <input type="hidden" id="nondev-down-perf">
-      <div class="prob-toolbar">
-        <button onclick="probFmtTarget('nondev-down-perf-box','bold')"><b>B</b></button>
-        <button onclick="probFmtTarget('nondev-down-perf-box','italic')"><i>I</i></button>
-        <button onclick="probFmtTarget('nondev-down-perf-box','underline')"><u>U</u></button>
-        <button onclick="probFmtTarget('nondev-down-perf-box','strikeThrough')"><s>S</s></button>
-        <button onclick="probFmtTarget('nondev-down-perf-box','insertOrderedList')">&#8801;</button>
-        <button onclick="probFmtTarget('nondev-down-perf-box','insertUnorderedList')">&#8942;</button>
-      </div>
-    </div>
-  </div>
-
   <div class="action-bar" style="flex-wrap:wrap; align-items:flex-start; gap:16px;">
     <!-- 수습평가 종합 서술형 -->
     <div id="probation-final" style="display:none; flex:1; min-width:0;">
@@ -1324,7 +1299,6 @@ const ITEMS_NONDEV_DOWN = [
   ['종합평가','핵심인재','해당 팀원은 대체 불가능한 핵심인재이며 퇴사할 경우 회사에 큰 손해 또는 목표 달성에 차질이 예상된다.',false],
   ['종합평가','AI대체불가','해당 팀원의 업무는 향후 10년 후에도 AI나 기술의 발달 또는 외주화 등을 통해 대체되기 힘들 것이다.',false],
   ['종합평가','부정적여론','해당 팀원은 변화와 성장, 소통 및 협업에 무관심하며 부정적인 여론을 조성하여 오히려 주변 팀원의 성장과 팀의 사기를 저하시킨다.','yn'],
-  ['이번 분기 성과평가','분기성과평가','이번 분기 팀원의 성과를 평가한다면?',false],
 ];
 
 // 수습평가 항목 (평가자가 작성) - PDF 기준
@@ -1854,10 +1828,7 @@ function setMode(m) {
   // 상향리뷰 주관식 섹션
   const upwardEssaySection = document.getElementById('upward-essay-section');
   if(upwardEssaySection) upwardEssaySection.style.display = isUpwardMode ? '' : 'none';
-  // 비개발팀 하향: 주관식 성과 섹션 표시
-  const nondevDownEssay = document.getElementById('nondev-down-essay-section');
-  const _isNonDevDown = (m === 'd1' && currentDept && currentDept.itemsDown === 'nondev_down');
-  if(nondevDownEssay) nondevDownEssay.style.display = _isNonDevDown ? '' : 'none';
+  // 비개발팀 하향: 주관식 성과 섹션 제거됨
 
   // ── 탭 UI 업데이트
   updatePhaseTabs();
@@ -2088,12 +2059,6 @@ function getCaseData() {
       if(txt) caseData['upward_essay'] = txt;
     }
   }
-  // 비개발팀 하향리뷰 주관식 (이번 분기 팀원 성과 평가)
-  const nondevDownBox = document.getElementById('nondev-down-perf-box');
-  if(nondevDownBox) {
-    const txt = nondevDownBox.innerText.trim();
-    if(txt) caseData['nondev_down_perf'] = txt;
-  }
   return caseData;
 }
 
@@ -2187,12 +2152,6 @@ async function submitToSlack() {
   // 수습평가: 리치텍스트 hidden input 동기화
   if(ITEMS === ITEMS_PROBATION) syncProbRichInputs();
 
-  // 비개발팀 하향리뷰: 주관식 hidden 동기화
-  if(mode === 'd1' && currentDept && currentDept.itemsDown === 'nondev_down') {
-    const ndBox = document.getElementById('nondev-down-perf-box');
-    const ndInp = document.getElementById('nondev-down-perf');
-    if(ndBox && ndInp) ndInp.value = ndBox.innerText.trim();
-  }
   if(isNonDevSelf() && !isLeaderMode) {
     const box = document.getElementById('nondev-yearend-box');
     const inp = document.getElementById('nondev-yearend');
@@ -2949,8 +2908,6 @@ function tempSave() {
   data._perfNextId = _perfNextId;
   const yearendBox = document.getElementById('nondev-yearend-box');
   if(yearendBox) data.nondevYearend = yearendBox.innerHTML;
-  const downPerfBox = document.getElementById('nondev-down-perf-box');
-  if(downPerfBox) data.nondevDownPerf = downPerfBox.innerHTML;
   // 셀프패널 상태 저장 (하향리뷰 시 참고용)
   const _panelInput = document.getElementById('panel-name-input');
   const _panelName  = document.getElementById('panel-name');
@@ -3018,8 +2975,6 @@ function tempLoad(silent) {
         }
         const ybox = document.getElementById('nondev-yearend-box');
         if(ybox && data.nondevYearend) ybox.innerHTML = data.nondevYearend;
-        const dbox = document.getElementById('nondev-down-perf-box');
-        if(dbox && data.nondevDownPerf) dbox.innerHTML = data.nondevDownPerf;
       }, 200);
     }
     // 셀프패널 복원 (하향리뷰 모드일 때)
@@ -3967,12 +3922,6 @@ function renderViewer(resultUrl, type, evaluator) {
         }
       }
       // 비개발팀 하향리뷰 — 이번 분기 팀원 성과 평가 (주관식)
-      if(casesObj['nondev_down_perf']) {
-        html += '<div class="admin-viewer-section">📝 이번 분기 팀원의 성과를 평가한다면?</div>';
-        html += '<div style="background:#fff;border:1px solid #E8EDFB;border-radius:10px;padding:14px 16px;font-size:13px;color:#374151;line-height:1.8;word-break:break-word;">'
-          + casesObj['nondev_down_perf'].replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')
-          + '</div>';
-      }
       // 리더 셀프리뷰 서술형 15개
       const leaderCases = Object.entries(casesObj).filter(([k]) => k.startsWith('leader_q'));
       if(leaderCases.length > 0) {
