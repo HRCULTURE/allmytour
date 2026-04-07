@@ -632,7 +632,6 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
       <div style="font-size:15px; font-weight:800; color:#1A1F27; margin-bottom:6px;">이번 분기 팀원의 성과를 평가한다면?<span style="color:#EF4444;"> *</span></div>
       <div style="font-size:12px; color:#4E5968; background:#F8F9FF; border:1px solid #E8ECF8; border-radius:10px; padding:14px 16px; margin-bottom:16px; line-height:1.95;">
         구체적인 사례를 함께 적어주시면 보다 정확하게 피드백을 전달하는 데 도움이 됩니다.<br>
-        <b>· 팀원이 셀프평가 시 설정해둔 각 성과의 가중치(중요도)를 본 후, 해당 성과에 대한 가중치가 너무 높거나/낮다고 판단되면 가중치를 수정하여 평가 가능합니다.</b><br>
         <b>· 코멘트 란에는 평가자가 부여한 하향평가 점수에 대한 사유를 기재해주시면 됩니다.</b>
       </div>
       <div class="prob-richbox" id="down-essay-box" contenteditable="true" placeholder="코멘트 입력하기 (필수)" style="min-height:140px;"></div>
@@ -3174,6 +3173,12 @@ if(_urlParams.get('d')) {
   document.getElementById('onboarding').style.display = 'none';
   // viewerMode를 restoreFromURL() 전에 설정해야 updatePhaseTabs()가 올바르게 동작
   viewerMode = (_urlParams.get('view') === 'down') ? 'down' : 'self';
+  // leader=1이면 리더 모드 활성화
+  if(_urlParams.get('leader') === '1') {
+    isLeaderMode = true;
+    const evalTableWrap = document.getElementById('eval-table-wrap');
+    if(evalTableWrap) evalTableWrap.style.display = 'none';
+  }
   restoreFromURL();
   if(viewerMode === 'down') {
     // 하향리뷰 원문보기: URL 쿼리의 evaluator로 덮어쓰기 (d 파라미터에도 저장되지만 명시적으로 처리)
