@@ -668,6 +668,8 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
         </button>
       </div>
       <div id="panel-status" style="font-size:11px; color:#B0B8C1; margin-top:6px;"></div>
+      <div id="panel-debug-area" style="display:none; margin-top:8px; background:#1E293B; border-radius:8px; padding:10px; font-size:10px; color:#94A3B8; white-space:pre-wrap; word-break:break-all; max-height:200px; overflow-y:auto;"></div>
+      <button onclick="debugPanelAPI()" style="margin-top:6px; width:100%; background:none; border:1px dashed #C7D2FE; border-radius:6px; padding:5px; font-size:10px; color:#94A3B8; cursor:pointer; font-family:inherit;">🔍 서술형 API 디버그</button>
     </div>
     <div id="panel-body">
       <div class="panel-empty">평가대상자 이름을 입력하고<br>조회 버튼을 누르세요</div>
@@ -2155,7 +2157,37 @@ function onPanelNameInput(val) {
   if(status) status.textContent = val ? 'Enter 또는 조회 버튼을 누르세요' : '';
 }
 
-function searchSelfByName(name) {
+function debugPanelAPI() {
+  const name = document.getElementById('panel-name-input')?.value?.trim();
+  const dbg = document.getElementById('panel-debug-area');
+  if(!name) { if(dbg) { dbg.style.display='block'; dbg.textContent='⚠️ 이름을 먼저 입력하세요'; } return; }
+  if(dbg) { dbg.style.display='block'; dbg.textContent='🔍 조회 중...'; }
+
+  // 1) query 액션 응답 확인
+  const _cb = '_dbg_' + Date.now();
+  const _s = document.createElement('script');
+  window[_cb] = function(res) {
+    delete window[_cb]; if(_s.parentNode) _s.parentNode.removeChild(_s);
+    let out = '=== query 응답 ===\n' + JSON.stringify(res, null, 2).substring(0, 1500);
+
+    // 2) get_cases_by_name 응답도 확인
+    const _cb2 = '_dbg2_' + Date.now();
+    const _s2 = document.createElement('script');
+    window[_cb2] = function(res2) {
+      delete window[_cb2]; if(_s2.parentNode) _s2.parentNode.removeChild(_s2);
+      out += '\n\n=== get_cases_by_name 응답 ===\n' + JSON.stringify(res2, null, 2).substring(0, 1500);
+      if(dbg) dbg.textContent = out;
+    };
+    _s2.onerror = function() { delete window[_cb2]; if(_s2.parentNode) _s2.parentNode.removeChild(_s2); out += '\n\nget_cases_by_name: 오류'; if(dbg) dbg.textContent = out; };
+    _s2.src = SHEETS_API_URL + '?action=get_cases_by_name&name=' + encodeURIComponent(name) + '&type=self&callback=' + _cb2;
+    document.head.appendChild(_s2);
+  };
+  _s.onerror = function() { delete window[_cb]; if(_s.parentNode) _s.parentNode.removeChild(_s); if(dbg) { dbg.textContent = 'query 액션 오류'; } };
+  _s.src = SHEETS_API_URL + '?action=query&name=' + encodeURIComponent(name) + '&callback=' + _cb;
+  document.head.appendChild(_s);
+}
+
+
   name = (name || '').trim();
   if(!name) return;
 
