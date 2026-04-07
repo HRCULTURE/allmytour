@@ -626,6 +626,27 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
     </div>
   </div>
 
+  <!-- ── 하향리뷰 서술형 섹션 ── -->
+  <div id="down-essay-section" style="display:none;">
+    <div class="table-card" style="padding:28px; margin-bottom:8px;">
+      <div style="font-size:15px; font-weight:800; color:#1A1F27; margin-bottom:6px;">이번 분기 팀원의 성과를 평가한다면?<span style="color:#EF4444;"> *</span></div>
+      <div style="font-size:12px; color:#4E5968; background:#F8F9FF; border:1px solid #E8ECF8; border-radius:10px; padding:14px 16px; margin-bottom:16px; line-height:1.95;">
+        구체적인 사례를 함께 적어주시면 보다 정확하게 피드백을 전달하는 데 도움이 됩니다.<br>
+        <b>· 코멘트 란에는 평가자가 부여한 하향평가 점수에 대한 사유를 기재해주시면 됩니다.</b>
+      </div>
+      <div class="prob-richbox" id="down-essay-box" contenteditable="true" placeholder="코멘트 입력하기 (필수)" style="min-height:140px;"></div>
+      <input type="hidden" id="down-essay">
+      <div class="prob-toolbar">
+        <button onclick="probFmtTarget('down-essay-box','bold')"><b>B</b></button>
+        <button onclick="probFmtTarget('down-essay-box','italic')"><i>I</i></button>
+        <button onclick="probFmtTarget('down-essay-box','underline')"><u>U</u></button>
+        <button onclick="probFmtTarget('down-essay-box','strikeThrough')"><s>S</s></button>
+        <button onclick="probFmtTarget('down-essay-box','insertOrderedList')">&#8801;</button>
+        <button onclick="probFmtTarget('down-essay-box','insertUnorderedList')">&#8942;</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── 상향리뷰 전용 주관식 섹션 ── -->
   <div id="upward-essay-section" style="display:none;">
     <div class="table-card" style="padding:28px; margin-bottom:8px;">
@@ -1269,7 +1290,8 @@ const ITEMS_DEV_DOWN = [
   ['데이터 기반 사고','근거기반판단','ㆍ업무 판단 시, 수치화된 근거나 과거 데이터를 논리적으로 활용했는가?',true],
   ['데이터 기반 사고','정량적접근','ㆍ여러 가지 테스트와 로그 기반 디버깅 등으로 문제점의 상황을 데이터 기반으로 제시한 적이 있었는가?',true],
   ['성과 및 결과물','납기준수','ㆍ명확한 결과물을 기한 내에 낼 수 있었는가?',false],
-  ['성과 및 결과물','품질관리','ㆍ결과물의 품질, 안정성, 사용자 피드백은 어땠는가?',false]
+  ['성과 및 결과물','품질관리','ㆍ결과물의 품질, 안정성, 사용자 피드백은 어땠는가?',false],
+  ['종합평가','성과평가','이번 분기 팀원의 성과를 평가한다면?',false]
 ];
 // 비개발팀 하향평가 항목 (기업연구소 외 모든팀) — 하향리뷰_비개발_.pdf 원문
 // [역량, 항목명, 문항, 타입] — 타입: false=점수없음/사례없음, true=사례입력, 'yn'=Y/N선택
@@ -1309,6 +1331,7 @@ const ITEMS_NONDEV_DOWN = [
   ['종합평가','핵심인재','해당 팀원은 대체 불가능한 핵심인재이며 퇴사할 경우 회사에 큰 손해 또는 목표 달성에 차질이 예상된다.',false],
   ['종합평가','AI대체불가','해당 팀원의 업무는 향후 10년 후에도 AI나 기술의 발달 또는 외주화 등을 통해 대체되기 힘들 것이다.',false],
   ['종합평가','부정적여론','해당 팀원은 변화와 성장, 소통 및 협업에 무관심하며 부정적인 여론을 조성하여 오히려 주변 팀원의 성장과 팀의 사기를 저하시킨다.','yn'],
+  ['종합평가','성과평가','이번 분기 팀원의 성과를 평가한다면?',false],
 ];
 
 // 수습평가 항목 (평가자가 작성) - PDF 기준
@@ -1837,6 +1860,8 @@ function setMode(m) {
   }
   // 상향리뷰 주관식 섹션 + 안내 배너
   const upwardEssaySection = document.getElementById('upward-essay-section');
+  const downEssaySection = document.getElementById('down-essay-section');
+  if(downEssaySection) downEssaySection.style.display = (m === 'd1' && !isUpwardMode) ? '' : 'none';
   const upwardBanner = document.getElementById('upward-banner');
   if(upwardBanner) upwardBanner.style.display = isUpwardMode ? '' : 'none';
   if(upwardEssaySection) upwardEssaySection.style.display = isUpwardMode ? '' : 'none';
@@ -2087,6 +2112,14 @@ function getCaseData() {
     if(upwardBox) {
       const txt = upwardBox.innerText.trim();
       if(txt) caseData['upward_essay'] = txt;
+    }
+  }
+  // 하향리뷰 서술형
+  if(mode === 'd1' && !isUpwardMode) {
+    const downBox = document.getElementById('down-essay-box');
+    if(downBox) {
+      const txt = downBox.innerText.trim();
+      if(txt) caseData['down_essay'] = txt;
     }
   }
   return caseData;
@@ -3161,7 +3194,7 @@ if(_urlParams.get('d')) {
 
   // 원본보기 공통: 버튼 영역 + 서술형 입력 섹션 숨기기
   document.querySelectorAll('.action-bar').forEach(el => { el.style.display = 'none'; });
-  ['self-essay-section','nondev-self-section','leader-essay-section','upward-essay-section','upward-banner','probation-essay','probation-final'].forEach(id => {
+  ['self-essay-section','nondev-self-section','leader-essay-section','upward-essay-section','upward-banner','down-essay-section','probation-essay','probation-final'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.style.display = 'none';
   });
