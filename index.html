@@ -3102,7 +3102,10 @@ function tempLoad(silent) {
         });
       }, 200);
     }
-    if(data.isLeaderMode) isLeaderMode = true;
+    if(data.isLeaderMode) {
+      isLeaderMode = true;
+      setMode('self'); // 리더 서술형 섹션 표시
+    }
     ITEMS.forEach((_, idx) => refreshRow(idx));
     calculate();
     // 비개발팀 셀프리뷰 성과 아이템 복원
@@ -3264,6 +3267,8 @@ if(_urlParams.get('d')) {
         adminMode = true; selfSubmitted = true; selfLockedFromURL = false;
       }
       buildTable();
+      // 리더 모드 복원
+      if(_tempData.isLeaderMode) isLeaderMode = true;
       setMode(_isProb ? 'd1' : _mode);
       if(_isProb) {
         // 수습 전용 UI 표시
