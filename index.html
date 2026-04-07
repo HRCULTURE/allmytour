@@ -4096,6 +4096,18 @@ function renderViewer(resultUrl, type, evaluator) {
         }
       }
       // 비개발팀 하향리뷰 — 이번 분기 팀원 성과 평가 (주관식)
+      if(casesObj['down_essay']) {
+        html += '<div class="admin-viewer-section">📝 하향리뷰 서술형</div>';
+        html += '<div style="background:#fff;border:1px solid #BFD9FF;border-radius:10px;padding:14px 16px;font-size:13px;color:#374151;line-height:1.8;word-break:break-word;">'
+          + casesObj['down_essay'].replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')
+          + '</div>';
+      }
+      if(casesObj['upward_essay']) {
+        html += '<div class="admin-viewer-section">📝 상향리뷰 의견</div>';
+        html += '<div style="background:#fff;border:1px solid #FDE68A;border-radius:10px;padding:14px 16px;font-size:13px;color:#374151;line-height:1.8;word-break:break-word;">'
+          + casesObj['upward_essay'].replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')
+          + '</div>';
+      }
       // 리더 셀프리뷰 서술형 15개
       const leaderCases = Object.entries(casesObj).filter(([k]) => k.startsWith('leader_q'));
       if(leaderCases.length > 0) {
