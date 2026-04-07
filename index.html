@@ -2681,7 +2681,8 @@ function renderPanelFromResultUrl(resultUrl, fallbackScore) {
     const urlDept = urlDeptValue ? (DEPT_CONFIG.find(d => d.value === urlDeptValue) || null) : null;
     const effectiveDept = urlDept || currentDept;
     const selfItemsMap = { dev: ITEMS_DEV, nondev: ITEMS_NONDEV };
-    const selfItemList = selfItemsMap[effectiveDept?.items] || ITEMS_SELF_REF || ITEMS;
+    const selfItemList = (effectiveDept ? selfItemsMap[effectiveDept.items] : null) || ITEMS_SELF_REF || ITEMS_DEV;
+    console.log('[패널디버그] urlDeptValue:', urlDeptValue, '| urlDept:', urlDept?.label, '| effectiveDept:', effectiveDept?.label, '| items key:', effectiveDept?.items, '| selfItemList length:', selfItemList?.length);
     const selfScores = data.s !== undefined ? expandScores(data.s) : (data.scores?.self || {});
     const cases = data.c || data.cases || {};
     let rows = '', total = 0, count = 0;
