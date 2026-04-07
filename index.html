@@ -2024,10 +2024,12 @@ function getCaseData() {
   document.querySelectorAll('.case-val').forEach(el => {
     if(el.value.trim()) caseData[el.dataset.idx] = el.value.trim();
   });
-  // 서술형 7개 문항
-  document.querySelectorAll('.essay-val').forEach(el => {
-    if(el.value.trim()) caseData['essay_' + el.dataset.essayIdx] = el.value.trim();
-  });
+  // 서술형 7개 문항 — 셀프리뷰 모드에서만 수집
+  if(mode === 'self') {
+    document.querySelectorAll('.essay-val').forEach(el => {
+      if(el.value.trim()) caseData['essay_' + el.dataset.essayIdx] = el.value.trim();
+    });
+  }
   // 수습리뷰 카드형 코멘트 (contenteditable div)
   if(ITEMS === ITEMS_PROBATION) {
     ITEMS_PROBATION.forEach((it, idx) => {
