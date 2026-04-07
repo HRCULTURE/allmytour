@@ -1944,6 +1944,21 @@ function refreshRow(idx) {
       if (scores.d1[si] === v) btn.classList.add('s1');
     }
   });
+  // Y/N 버튼 복원
+  ['Y','N'].forEach(yn => {
+    const btnY = document.getElementById(`b-${idx}-Y`);
+    const btnN = document.getElementById(`b-${idx}-N`);
+    if(!btnY || !btnN) return;
+    // 초기화
+    btnY.style.background='#fff'; btnY.style.borderColor='#E2E8F0'; btnY.style.color='#94A3B8';
+    btnN.style.background='#fff'; btnN.style.borderColor='#E2E8F0'; btnN.style.color='#94A3B8';
+    const d1Val = scores.d1[si];
+    if(d1Val === 'Y') {
+      btnY.style.background='#ECFDF5'; btnY.style.borderColor='#10B981'; btnY.style.color='#065F46';
+    } else if(d1Val === 'N') {
+      btnN.style.background='#FEF2F2'; btnN.style.borderColor='#EF4444'; btnN.style.color='#991B1B';
+    }
+  });
   function scoreLabel(v) {
     if(!v) return '';
     const allG = [...GRADES, ...GRADES_SIMPLE, ...GRADES_PROB];
