@@ -382,6 +382,15 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
     ⚠️ <strong>하향리뷰 모드입니다.</strong> 셀프리뷰 점수는 수정할 수 없습니다. 직원이 작성한 파란색 셀프 점수를 참고하여 하향 점수만 새로 선택해 주세요.
   </div>
 
+  <!-- 상향리뷰 안내 배너 -->
+  <div id="upward-banner" style="display:none; background:#F0F9FF; border:1px solid #BAE6FD; border-left:4px solid #0EA5E9; border-radius:12px; padding:18px 24px; margin-bottom:24px; font-size:13px; color:#0C4A6E; box-shadow:var(--shadow-sm); line-height:1.8;">
+    <div style="font-weight:800; font-size:14px; margin-bottom:10px;">📋 [상향평가 진행 전, 필독 부탁드립니다]</div>
+    팀원분들이 제출해주시는 리더 상향평가는 비밀이 철저히 보장됨을 약속드립니다.<br>
+    어떠한 경우에도 팀원 개별 평가 내용이 피평가자(리더)와 팀원들에게 공개되지 않으므로, 솔직하게 답변해주시면 감사하겠습니다 😊<br><br>
+    해당 상향평가는 인기 투표가 아닙니다.<br>
+    풍문이나 주변 동료들의 평판이 아닌, 본인이 직접 경험한 사실에만 기반하여 최대한 객관적이고 공정하게 임해주기 바랍니다.
+  </div>
+
   <div class="info-card">
     <div class="info-grid">
       <div><div class="field-label">사 번</div><input class="field-input" id="inf-id" type="text" placeholder="사번 입력"></div>
@@ -1825,8 +1834,10 @@ function setMode(m) {
       if(evalTableWrap) evalTableWrap.style.display = 'none';
     }
   }
-  // 상향리뷰 주관식 섹션
+  // 상향리뷰 주관식 섹션 + 안내 배너
   const upwardEssaySection = document.getElementById('upward-essay-section');
+  const upwardBanner = document.getElementById('upward-banner');
+  if(upwardBanner) upwardBanner.style.display = isUpwardMode ? '' : 'none';
   if(upwardEssaySection) upwardEssaySection.style.display = isUpwardMode ? '' : 'none';
   // 비개발팀 하향: 주관식 성과 섹션 제거됨
 
@@ -3126,7 +3137,7 @@ if(_urlParams.get('d')) {
 
   // 원본보기 공통: 버튼 영역 + 서술형 입력 섹션 숨기기
   document.querySelectorAll('.action-bar').forEach(el => { el.style.display = 'none'; });
-  ['self-essay-section','nondev-self-section','leader-essay-section','upward-essay-section','probation-essay','probation-final'].forEach(id => {
+  ['self-essay-section','nondev-self-section','leader-essay-section','upward-essay-section','upward-banner','probation-essay','probation-final'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.style.display = 'none';
   });
@@ -3794,8 +3805,13 @@ function renderViewer(resultUrl, type, evaluator) {
       if(!str) return {};
       const out = {};
       str.split(',').forEach(part => {
-        const [k,v] = part.split(':');
-        if(k !== undefined && v !== undefined) out[String(parseInt(k))] = parseInt(v);
+        const idx = part.indexOf(':');
+        if(idx === -1) return;
+        const k = part.slice(0, idx);
+        const v = part.slice(idx + 1);
+        if(!k || v === undefined) return;
+        const numVal = parseInt(v);
+        out[String(parseInt(k))] = isNaN(numVal) ? v : numVal;
       });
       return out;
     }
@@ -3806,9 +3822,12 @@ function renderViewer(resultUrl, type, evaluator) {
     const cases      = data.c || data.cases || {};
     const showScores = type === 'self' ? selfScores : downScores;
 
-    // 부서명으로 비개발팀 여부 판단
+    // deptValue로 부서 판단 (없으면 dept 텍스트로 fallback)
     const nondevDepts = ['영업전략팀','레비뉴팀','운영기획팀','경영지원팀'];
-    const isNonDevViewer = nondevDepts.some(d => (info.dept || '').includes(d.replace('팀','')));
+    const urlDeptCfg = info.deptValue ? (DEPT_CONFIG.find(d => d.value === info.deptValue) || null) : null;
+    const isNonDevViewer = urlDeptCfg
+      ? urlDeptCfg.itemsDown === 'nondev_down'
+      : nondevDepts.some(d => (info.dept || '').includes(d.replace('팀','')));
     let itemList;
     if(type === 'prob') {
       itemList = ITEMS_PROBATION;
@@ -3817,7 +3836,7 @@ function renderViewer(resultUrl, type, evaluator) {
     } else if(type === 'self') {
       itemList = isNonDevViewer ? ITEMS_NONDEV : ITEMS_DEV;
     } else {
-      // down
+      // down — 비개발팀은 ITEMS_NONDEV_DOWN, 개발팀은 ITEMS_DEV_DOWN
       itemList = isNonDevViewer ? ITEMS_NONDEV_DOWN : ITEMS_DEV_DOWN;
     }
 
