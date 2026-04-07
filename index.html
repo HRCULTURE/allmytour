@@ -3720,6 +3720,7 @@ function renderAdminTable(tab) {
     });
     wrap.innerHTML = t + '</tbody></table>';
   } else {
+    let t = '<table class="admin-table"><thead><tr><th>제출일시</th><th>평가자</th><th>평가대상자</th><th>부서</th><th>하향점수</th><th>원본</th></tr></thead><tbody>';
     rows.forEach((r) => {
       const safeUrl = encodeURIComponent(r['result_url'] || '');
       const safeName = (r['평가대상자'] || '').replace(/"/g, '&quot;');
