@@ -2314,20 +2314,38 @@ function renderPanelFromResultUrl(resultUrl, fallbackScore, casesFromQuery) {
     const itemsArea = essayArea.previousElementSibling;
     if(itemsArea && updatedRows) itemsArea.innerHTML = updatedRows;
 
-    // 서술형 essay_* 키 표시
+    // 서술형 표시 — essay_* 키 또는 숫자 키('0'~'9') 모두 처리
+    // Apps Script가 서술형_json 없을 때 {'0': text} 형태로 반환하기 때문
     const allEssayKeys = Object.keys(c).filter(k => k.startsWith('essay_'));
-    if(allEssayKeys.length === 0) { essayArea.innerHTML = ''; return; }
+    const numericKeys  = Object.keys(c).filter(k => /^\d+$/.test(k) && c[k] && String(c[k]).length > 30);
+    // essay_* 키가 없고 숫자 키가 있으면 숫자 키를 essay로 처리
+    const useNumericAsEssay = allEssayKeys.length === 0 && numericKeys.length > 0;
+
+    if(allEssayKeys.length === 0 && !useNumericAsEssay) { essayArea.innerHTML = ''; return; }
+
     let eHtml = '<div style="font-size:11px;font-weight:700;color:#6366F1;padding:4px 0 8px;border-bottom:1px solid #EEF0F8;margin-bottom:8px;">📝 서술형 답변</div>';
-    allEssayKeys.sort((a,b) => parseInt(a.split('_')[1]) - parseInt(b.split('_')[1])).forEach(key => {
-      const i = parseInt(key.split('_')[1]);
-      const val = c[key];
-      if(!val) return;
-      const label = essayLabels[i] || ('서술형' + (i+1));
-      eHtml += '<div style="margin-bottom:10px;">'
-        + '<div style="font-size:10px;font-weight:700;color:#4338CA;margin-bottom:3px;">[서술형' + (i+1) + '] ' + label + '</div>'
-        + '<div style="font-size:12px;color:#1E293B;line-height:1.6;background:#F0F9FF;border-left:3px solid #6366F1;padding:6px 10px;border-radius:6px;white-space:pre-wrap;">' + val + '</div>'
-        + '</div>';
-    });
+
+    if(useNumericAsEssay) {
+      // {'0': '...전체 서술형 텍스트...'} 형태 → 하나의 블록으로 표시
+      numericKeys.sort((a,b) => parseInt(a)-parseInt(b)).forEach(key => {
+        const val = c[key];
+        if(!val) return;
+        eHtml += '<div style="margin-bottom:10px;">'
+          + '<div style="font-size:12px;color:#1E293B;line-height:1.7;background:#F0F9FF;border-left:3px solid #6366F1;padding:10px 12px;border-radius:6px;white-space:pre-wrap;">' + val + '</div>'
+          + '</div>';
+      });
+    } else {
+      allEssayKeys.sort((a,b) => parseInt(a.split('_')[1]) - parseInt(b.split('_')[1])).forEach(key => {
+        const i = parseInt(key.split('_')[1]);
+        const val = c[key];
+        if(!val) return;
+        const label = essayLabels[i] || ('서술형' + (i+1));
+        eHtml += '<div style="margin-bottom:10px;">'
+          + '<div style="font-size:10px;font-weight:700;color:#4338CA;margin-bottom:3px;">[서술형' + (i+1) + '] ' + label + '</div>'
+          + '<div style="font-size:12px;color:#1E293B;line-height:1.6;background:#F0F9FF;border-left:3px solid #6366F1;padding:6px 10px;border-radius:6px;white-space:pre-wrap;">' + val + '</div>'
+          + '</div>';
+      });
+    }
     essayArea.innerHTML = eHtml;
   }
 
