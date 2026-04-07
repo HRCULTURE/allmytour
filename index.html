@@ -3062,6 +3062,7 @@ if(_urlParams.get('d')) {
   const _initDownMap  = { dev_down: ITEMS_DEV_DOWN, nondev: ITEMS_NONDEV, nondev_down: ITEMS_NONDEV_DOWN };
   ITEMS      = _initItemsMap[currentDept.items]    || ITEMS_DEV;
   ITEMS_DOWN = _initDownMap[currentDept.itemsDown] || ITEMS_DEV_DOWN;
+  buildTable(); // deptValue 반영 후 테이블 재빌드
   document.getElementById('dept-badge-text').textContent = currentDept.emoji + ' ' + currentDept.label;
   document.getElementById('onboarding').style.display = 'none';
   // viewerMode를 restoreFromURL() 전에 설정해야 updatePhaseTabs()가 올바르게 동작
