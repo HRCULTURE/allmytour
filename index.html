@@ -2608,7 +2608,7 @@ function searchSelfByName(name) {
     panelName.textContent = data.name + ' 님';
     panelStatus.textContent = '제출일: ' + (data.submitted || '-');
     autoFillInfo(data);
-    renderPanelFromResultUrl(data.result_url, data.self_score, data.cases);
+    renderPanelFromResultUrl(data.result_url, data.self_score);
   };
   _qS.onerror = function() {
     clearTimeout(_qTimer); _qCl();
@@ -2619,22 +2619,22 @@ function searchSelfByName(name) {
 }
 
 function autoFillInfo(data) {
-  // 평가대상자 정보 자동 입력 (하향리뷰 모드에서는 이름 항상 덮어씀)
-  function fill(id, val, force) {
+  // 평가대상자 정보 자동 입력 (비어있는 필드만)
+  function fill(id, val) {
     const el = document.getElementById(id);
-    if(el && val) { if(force || !el.value) el.value = val; }
+    if(el && !el.value && val) el.value = val;
   }
-  const isDown = (mode === 'd1' || mode === 'd2');
-  fill('inf-name', data.name, isDown);
+  fill('inf-name', data.name);
   fill('inf-dept', data.dept);
   fill('inf-pos',  data.pos);
   fill('inf-id',   data.employee_id);
   fill('inf-work', data.work);
   fill('inf-join', data.join);
+  // 이름 레이블 동기화
   syncNameLabels();
 }
 
-function renderPanelFromResultUrl(resultUrl, fallbackScore, queryCases) {
+function renderPanelFromResultUrl(resultUrl, fallbackScore) {
   const panelBody  = document.getElementById('panel-body');
   const panelTotal = document.getElementById('panel-total');
 
@@ -2709,7 +2709,7 @@ function renderPanelFromResultUrl(resultUrl, fallbackScore, queryCases) {
     ];
 
     let essayHtml = '';
-    const name = document.getElementById('panel-name-input')?.value?.trim() || data.i?.name || document.getElementById('inf-name')?.value?.trim() || '';
+    const name = document.getElementById('inf-name')?.value?.trim() || data.i?.name || '';
     if(name && SHEETS_API_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
       // 일단 점수 먼저 표시
       panelBody.innerHTML = '<div class="self-panel-items">' + rows + '</div><div id="panel-essay-area" style="padding:12px 16px;border-top:1px solid #EEF0F8;"><div style="font-size:11px;color:#94A3B8;text-align:center;">서술형 불러오는 중...</div></div>';
@@ -2776,19 +2776,15 @@ function renderPanelFromResultUrl(resultUrl, fallbackScore, queryCases) {
             }
             essayArea.innerHTML = ndHtml;
           } else {
-            // ── 개발팀: 서술형 표시 (essay_* / leader_q* / 숫자 키 모두 처리) ──
-            const essayKeys  = Object.keys(c).filter(k => k.startsWith('essay_'));
-            const leaderKeys = Object.keys(c).filter(k => k.startsWith('leader_q'));
-            const numKeys    = Object.keys(c).filter(k => /^\d+$/.test(k) && c[k] && String(c[k]).length > 30);
-            const useKeys = essayKeys.length > 0 ? essayKeys : leaderKeys.length > 0 ? leaderKeys : numKeys;
-            if(useKeys.length === 0) { essayArea.innerHTML = ''; return; }
+            // ── 개발팀: 서술형 7개 표시 ──
+            const hasEssay = essayLabels.some((_, i) => c['essay_' + i]);
+            if(!hasEssay) { essayArea.innerHTML = ''; return; }
             let eHtml = '<div style="font-size:11px;font-weight:700;color:#6366F1;padding:4px 0 8px;border-bottom:1px solid #EEF0F8;margin-bottom:8px;">📝 서술형 답변</div>';
-            useKeys.sort((a,b) => (parseInt(a.replace(/\D/g,''))||0)-(parseInt(b.replace(/\D/g,''))||0)).forEach((key, i) => {
-              const val = c[key];
+            essayLabels.forEach((label, i) => {
+              const val = c['essay_' + i];
               if(!val) return;
-              const label = key.startsWith('essay_') ? (essayLabels[parseInt(key.split('_')[1])] || ('서술형'+(i+1))) : ('서술형'+(i+1));
               eHtml += '<div style="margin-bottom:10px;">'
-                + (label !== ('서술형'+(i+1)) ? '<div style="font-size:10px;font-weight:700;color:#4338CA;margin-bottom:3px;">[서술형' + (i+1) + '] ' + label + '</div>' : '<div style="font-size:10px;font-weight:700;color:#4338CA;margin-bottom:3px;">[서술형' + (i+1) + ']</div>')
+                + '<div style="font-size:10px;font-weight:700;color:#4338CA;margin-bottom:3px;">[서술형' + (i+1) + '] ' + label + '</div>'
                 + '<div style="font-size:12px;color:#1E293B;line-height:1.6;background:#F0F9FF;border-left:3px solid #6366F1;padding:6px 10px;border-radius:6px;white-space:pre-wrap;">' + val + '</div>'
                 + '</div>';
             });
