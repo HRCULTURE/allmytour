@@ -3022,7 +3022,8 @@ function tempSave() {
       task:     document.getElementById('inf-task')?.value || '',
       joinDate: document.getElementById('inf-join')?.value || '',
       deptValue: currentDept ? currentDept.value : 'dev',
-      mode: mode
+      mode: mode,
+      evaluator: document.getElementById('inf-evaluator')?.value || ''
     },
     cases: {},
     savedAt: new Date().toLocaleString('ko-KR')
@@ -3090,6 +3091,7 @@ function tempLoad(silent) {
       if(data.info.role)   { const el = document.getElementById('inf-role');  if(el) el.value = data.info.role; }
       if(data.info.task)   { const el = document.getElementById('inf-task');  if(el) el.value = data.info.task; }
       if(data.info.joinDate){ const el = document.getElementById('inf-join'); if(el) el.value = data.info.joinDate; }
+      if(data.info.evaluator){ const el = document.getElementById('inf-evaluator'); if(el) el.value = data.info.evaluator; }
     }
     if(data.cases) {
       setTimeout(() => {
