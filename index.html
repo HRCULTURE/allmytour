@@ -3247,6 +3247,25 @@ if(_urlParams.get('d')) {
     const _dSelfLocked = document.getElementById('d-self-locked');
     if(_dSelfOpen)   _dSelfOpen.style.display   = 'none';
     if(_dSelfLocked) _dSelfLocked.style.display = 'none';
+  } else if(viewerMode === 'upward') {
+    // 상향리뷰 원문보기: 셀프리뷰 카드 레이블을 상향리뷰로 변경, 하향 패널 숨김
+    const _dDownPanel = document.getElementById('d-down-panel');
+    if(_dDownPanel) _dDownPanel.style.display = 'none';
+    const _dcDownWrap = document.getElementById('dc-down-wrap');
+    if(_dcDownWrap) _dcDownWrap.style.display = 'none';
+    const _dSelfOpen = document.getElementById('d-self-open');
+    if(_dSelfOpen) {
+      _dSelfOpen.style.display = '';
+      const _label = _dSelfOpen.querySelector('.score-label');
+      if(_label) _label.innerHTML = '⬆️ 상향리뷰 총점<span class="score-desc">UPWARD REVIEW</span>';
+    }
+    // 상향리뷰 총점을 d-self에 표시 (scores.d1 기반)
+    setTimeout(() => {
+      const vals = Object.values(scores.d1 || {}).filter(v => typeof v === 'number' && v > 0);
+      const avg = vals.length > 0 ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : '0.0';
+      const dSelf = document.getElementById('d-self');
+      if(dSelf) dSelf.textContent = avg;
+    }, 300);
   } else {
     // 셀프리뷰 원문보기: 하향리뷰 관련 UI 모두 숨김
     const _dDownPanel = document.getElementById('d-down-panel');
