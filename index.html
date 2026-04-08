@@ -3021,6 +3021,8 @@ function tempSave() {
       role:     document.getElementById('inf-role')?.value || '',
       task:     document.getElementById('inf-task')?.value || '',
       joinDate: document.getElementById('inf-join')?.value || '',
+      work:     document.getElementById('inf-work')?.value || '',
+      date:     document.getElementById('inf-date')?.value || '',
       deptValue: currentDept ? currentDept.value : 'dev',
       mode: mode,
       evaluator: document.getElementById('inf-evaluator')?.value || ''
@@ -3091,6 +3093,8 @@ function tempLoad(silent) {
       if(data.info.role)   { const el = document.getElementById('inf-role');  if(el) el.value = data.info.role; }
       if(data.info.task)   { const el = document.getElementById('inf-task');  if(el) el.value = data.info.task; }
       if(data.info.joinDate){ const el = document.getElementById('inf-join'); if(el) el.value = data.info.joinDate; }
+      if(data.info.work)    { const el = document.getElementById('inf-work'); if(el) el.value = data.info.work; }
+      if(data.info.date)    { const el = document.getElementById('inf-date'); if(el) el.value = data.info.date; }
       if(data.info.evaluator){ const el = document.getElementById('inf-evaluator'); if(el) el.value = data.info.evaluator; }
     }
     if(data.cases) {
